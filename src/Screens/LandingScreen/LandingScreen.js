@@ -13,7 +13,7 @@ const LandingScreen = () => {
 
   //ContinueButtonPressed
   const continueButtonPressed = () => {
-    console.log('continue button pressed');
+    navigation.navigate('HomeScreen');
   };
 
   //render
