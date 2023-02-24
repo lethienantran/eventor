@@ -21,28 +21,7 @@ const AddEventScreen = () => {
   const navigation = useNavigation();
   return (
     <View style={styles.root}>
-      <View style={styles.contentContainer}>
-        <View style={styles.headerContainer}>
-          <Pressable style={styles.backButton} onPress={onBackPressed}>
-            <Entypo
-              name="chevron-left"
-              style={styles.backIcon}
-              color={'#000'}
-            />
-          </Pressable>
-          <Text style={styles.logoText}>eventor</Text>
-          <Pressable style={styles.editButton} onPress={onEditPressed}>
-            <Feather
-              name="edit"
-              style={styles.editIcon}
-              color={'#000'}
-            />
-          </Pressable>
-        </View>
-        <View style={styles.eventBannerContainer}>
 
-        </View>
-      </View>
     </View>
   );
 };
@@ -54,47 +33,6 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems:'center',
     backgroundColor:'#FFF',
-  },
-  contentContainer:{
-    width: width - 50,
-    height: height,
-    flexDirection:'column',
-  },
-  headerContainer:{
-    flexDirection:'row',
-    justifyContent:'space-between',
-    alignItems:'center',
-    width:'100%',
-    height:80,
-  },
-  backButton:{
-    height:36,
-    width:36,
-    justifyContent:'center',
-    alignItems:'center',
-  },
-  backIcon:{
-    fontSize:20,
-  },
-  logoText:{
-    fontSize: RFPercentage(4),
-    fontFamily: 'OpenSans-SemiBold',
-    color: 'black',
-  },
-  editButton:{
-    height:36,
-    width:36,
-    justifyContent:'center',
-    alignItems:'center',
-  },
-  editIcon:{
-    fontSize:20,
-  },
-  eventBannerContainer:{
-    width:'100%',
-    height: 113,
-    borderRadius:20,
-    backgroundColor:'#EEEEEE',
   },
 });
 export default AddEventScreen;
