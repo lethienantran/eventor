@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: RFPercentage(5),
+    fontSize: RFPercentage(4),
     fontFamily: 'OpenSans-SemiBold',
     color: 'black',
   },
