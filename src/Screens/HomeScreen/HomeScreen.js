@@ -17,6 +17,7 @@ import moment from 'moment';
 import eventsBanner from '../../../assets/images/eventsBanner.png';
 import {DBContext} from '../../../App';
 import Logo from '../../components/Logo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = () => {
   //using db in screen/components
@@ -50,6 +51,19 @@ const HomeScreen = () => {
   const addButtonPressed = () => {
     navigation.navigate('AddEventScreen');
   };
+
+  const onEventPressed = async selectedEventID => {
+    // navigation.navigate('EventDetailScreen');
+    AsyncStorage.setItem('selectedEventID', selectedEventID.toString())
+      .then(()=>{
+        console.log("SelectedEventID: " + selectedEventID.toString());
+        navigation.navigate('EventDetailScreen');
+      })
+      .catch(error=>{
+        console.error('Error', 'Could not save SelectedEventID to AsyncStorage!');
+        console.error(error);
+      });
+  }
 
   // Get the current date
   const today = new Date();
@@ -118,7 +132,7 @@ const HomeScreen = () => {
       'MM/DD/YYYY',
     );
     return (
-      <View key={item.eventID} style={styles.feedItem}>
+      <Pressable key={item.eventID} style={styles.feedItem} onPress={() => onEventPressed(item.eventID)}>
         <ImageBackground
           source={eventsBanner}
           resizeMode="cover"
@@ -140,7 +154,7 @@ const HomeScreen = () => {
             </Text>
           </View>
         </ImageBackground>
-      </View>
+      </Pressable>
     );
   };
 

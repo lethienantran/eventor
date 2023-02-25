@@ -1,5 +1,5 @@
-import {View, Text, StyleSheet, Dimensions, Pressable, ImageBackground} from 'react-native';
-import React from 'react';
+import {View, Text, StyleSheet, Dimensions, Pressable, ImageBackground, ScrollView} from 'react-native';
+import React, {useContext, useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
@@ -8,29 +8,110 @@ import { ScaledSheet } from 'react-native-size-matters';
 import { RFPercentage } from 'react-native-responsive-fontsize';
 import Logo from '../../components/Logo';
 
+import {DBContext} from '../../../App';
+
 import eventsBanner from '../../../assets/images/eventsBanner.png';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const {height, width} = Dimensions.get('window');
 
-const AddEventScreen = () => {
+const retrieveSelectedEventID = async () =>{
+  try{
+    const currSelectedEventID = await AsyncStorage.getItem('selectedEventID');
+    return currSelectedEventID !== null ? currSelectedEventID : null;
+  }
+  catch(error){
+    console.error(error);
+  }
+};
 
-  const onBackPressed = () =>{
+const EventDetailScreen = () => {
+  
+  //call useNavigation to be able to navigate around
+  const navigation = useNavigation();
 
+  const db = useContext(DBContext);
+  const [currentSelectedEventID, setCurrentSelectedEventID] = useState();
+
+  const setSelectedEventID = async () => {
+    try{
+      const val = await retrieveSelectedEventID();
+      if(val !== null){
+        return val;
+      }
+      else{
+        console.error('No SelectedEventID found');
+      }
+    }
+    catch (error){
+      console.error(error);
+    }
+  };
+
+  const onBackPressed = async() =>{
+    try{
+      //remove the selectedClubID value
+      await AsyncStorage.removeItem('selectedEventID');
+
+      const currSelectedEventID = await retrieveSelectedEventID();
+
+      if(currSelectedEventID == null){
+        console.log('BackPressed! The selectedEventID in AsynStorage is removed and now become ' + currSelectedEventID + '.');
+      }
+
+      navigation.goBack();
+    }
+    catch(error){
+      console.error(error);
+    }
   };
 
   const onEditPressed = () =>{
-
+    //navigate to add task screen    
+    console.warn('navigate to edit task screen');
   };
 
   const onAddTaskPressed = () =>{
-    
+    //navigate to add task screen    
+    console.warn('navigate to add task screen');
   };
 
-  //call useNavigation to be able to navigate around
-  const navigation = useNavigation();
+
+  const [eventName, setEventName] = useState('');
+  const [location, setLocation] = useState('');
+  const [status, setStatus] = useState('');
+  const [progression, setProgression] = useState('');
+  const [description, setDescription] = useState('');
+
+  const [viewMode, setViewMode] = useState('description');
+
+  const onDescriptionPressed = () =>{
+    setViewMode('description');
+  };
+
+  const onRemainingTasksPressed = () =>{
+    setViewMode('remainingTasks');
+  };
+
+  useEffect(()=>{
+    setSelectedEventID().then(setCurrentSelectedEventID);
+    db.transaction(tx=>{
+      tx.executeSql(
+        'SELECT * FROM events WHERE eventID = ?',
+        [currentSelectedEventID],
+        (tx, results) => {
+          setEventName(results.rows.item(0).eventName);
+          setLocation(results.rows.item(0).location);
+          setProgression(results.rows.item(0).eventProgress);
+          setDescription(results.rows.item(0).eventCaption);
+        }, 
+      );
+    });
+  }, [currentSelectedEventID]);
   return (
     <View style={styles.root}>
       <View style={styles.container}>
-        <Logo />
+        <Logo onPress={onBackPressed} title ='eventor' hasBack='true' hasEdit='true'/>
         <View style={styles.contentContainer}>
           <View style={styles.eventBannerContainer}>
             <ImageBackground
@@ -43,87 +124,89 @@ const AddEventScreen = () => {
           <View style={styles.eventInfoContainer}>
             <View style={styles.eventInfoHeader}>
               <Text style={styles.eventName}>
-                Brain Injury Art Show
+                {eventName}
               </Text>
               <Octicons name='pulse' style={styles.eventStatusIcon}/>
             </View>
             <View style={styles.eventLocationContainer}>
               <Feather name='map-pin' style={styles.mapPinIcon}/>
               <Text style={styles.eventLocationText}>
-                Bellevue Arts Museum
+                {location}
               </Text>
             </View>
           </View>
           <View style={styles.viewModeContainer}>
-              <Pressable style={styles.descriptionButton}>
-                <Text style={styles.descriptionText}>Description</Text>
+              <Pressable style={[viewMode === 'description' ? (styles.selectedButton) : (styles.unselectedButton), styles.descriptionButton]} onPress={onDescriptionPressed}>
+                <Text style={[viewMode === 'description' ? (styles.selectedText) : (styles.unselectedText), styles.viewModeText]}>Description</Text>
               </Pressable>
-              <Pressable style={styles.remainingTasksButton}>
-                <Text style={styles.remainingTasksText}>
+              <Pressable style={[viewMode === 'remainingTasks' ? (styles.selectedButton) : (styles.unselectedButton), styles.remainingTasksButton]} onPress={onRemainingTasksPressed}>
+                <Text style={[viewMode === 'remainingTasks' ? (styles.selectedText) : (styles.unselectedText), styles.viewModeText]}>
                   Remaining Tasks
                 </Text>
               </Pressable>
           </View>
-          <View style={styles.taskList}>
-            <View style={styles.taskContainer}>
-              <View style={styles.taskInfoContainter}>
-                <Octicons name='pulse' style={styles.taskStatusIcon}/>
-                <Text style={styles.taskName}>Set up the paintings</Text>
+          
+          {viewMode ==='remainingTasks' ? (
+            <>
+              <View style={styles.taskList}>
+                <View style={styles.taskContainer}>
+                  <View style={styles.taskInfoContainter}>
+                    <Octicons name='pulse' style={styles.taskStatusIcon}/>
+                    <Text style={styles.taskName}>Set up the paintings</Text>
+                  </View>
+                  <Pressable style={styles.taskEditButton} onPress={onEditPressed}>
+                    <Feather name='edit-3' style={styles.editTaskIcon}/>
+                  </Pressable>
+                </View>
+                <View style={styles.taskContainer}>
+                  <View style={styles.taskInfoContainter}>
+                    <Octicons name='pulse' style={styles.taskStatusIcon}/>
+                    <Text style={styles.taskName}>Set up the paintings</Text>
+                  </View>
+                  <Pressable style={styles.taskEditButton} onPress={onEditPressed}>
+                    <Feather name='edit-3' style={styles.editTaskIcon}/>
+                  </Pressable>
+                </View>
+                <View style={styles.taskContainer}>
+                  <View style={styles.taskInfoContainter}>
+                    <Octicons name='pulse' style={styles.taskStatusIcon}/>
+                    <Text style={styles.taskName}>Set up the paintings</Text>
+                  </View>
+                  <Pressable style={styles.taskEditButton} onPress={onEditPressed}>
+                    <Feather name='edit-3' style={styles.editTaskIcon}/>
+                  </Pressable>
+                </View>
               </View>
-              <Pressable style={styles.taskEditButton}>
-                <Feather name='edit-3' style={styles.editTaskIcon}/>
-              </Pressable>
-            </View>
-            <View style={styles.taskContainer}>
-              <View style={styles.taskInfoContainter}>
-                <Octicons name='pulse' style={styles.taskStatusIcon}/>
-                <Text style={styles.taskName}>Set up the paintings</Text>
+              <View style={styles.actionBar}>
+                <View style={styles.progressionContainer}>
+                  <View style={styles.progressionHeader}>
+                    <Text style={styles.progressionText}>
+                      Progression
+                    </Text>
+                    <MaterialCommunityIcons name='chart-timeline-variant' style={styles.graphIcon}/>
+                  </View>
+                  <Text style={styles.progressText}>{progression}%</Text>
+                </View>
+                <Pressable onPress={onAddTaskPressed}>
+                  <MaterialCommunityIcons
+                    name="plus-circle"
+                    style={styles.addButtonIcon}
+                    color={'#FF3008'}
+                  />
+                </Pressable>
               </View>
-              <Pressable style={styles.taskEditButton}>
-                <Feather name='edit-3' style={styles.editTaskIcon}/>
-              </Pressable>
-            </View>
-            <View style={styles.taskContainer}>
-              <View style={styles.taskInfoContainter}>
-                <Octicons name='pulse' style={styles.taskStatusIcon}/>
-                <Text style={styles.taskName}>Set up the paintings</Text>
-              </View>
-              <Pressable style={styles.taskEditButton}>
-                <Feather name='edit-3' style={styles.editTaskIcon}/>
-              </Pressable>
-            </View>
-          </View>
-          <View style={styles.actionBar}>
-            <View style={styles.progressionContainer}>
-              <View style={styles.progressionHeader}>
-                <Text style={styles.progressionText}>
-                  Progression
-                </Text>
-                <MaterialCommunityIcons name='chart-timeline-variant' style={styles.graphIcon}/>
-              </View>
-              <Text style={styles.progressText}>66.6%</Text>
-            </View>
-            <Pressable onPress={onAddTaskPressed}>
-              <MaterialCommunityIcons
-                name="plus-circle"
-                style={styles.addButtonIcon}
-                color={'#FF3008'}
-              />
-            </Pressable>
-          </View>
-
-          {/* <View style={styles.aboutContainer}>
+            </>): (
+          <View style={styles.aboutContainer}>
             <Text style={styles.headerText}>
               About the event
             </Text>
-            <View style={styles.bodyContainer}>
+            <ScrollView style={styles.bodyContainer}>
               <Text style={styles.bodyText}>
-              Every piece displayed in this exhibit was created with care by an artist who survived a life altering event.
-               For them, their lives were not only changed in the moment but in the years to follow as a new normal would be established.
-               Art is a form of expression that allows the participants to showcase their journey, either whole or the process, to spread awareness and help those outside of the community understand their life with a Brain Injury.
+              {description}
               </Text>
-            </View>
-          </View> */}
+            </ScrollView>
+          </View >
+          )}
         </View>
       </View>
     </View>
@@ -218,12 +301,6 @@ const styles = ScaledSheet.create({
     borderRadius:'20@ms',
     justifyContent:'center',
     alignItems:'center',
-    backgroundColor:'#FF3008',
-  },
-  descriptionText:{
-    fontFamily:'Inter-SemiBold',
-    fontSize:RFPercentage(2.25),
-    color:'white',
   },
   remainingTasksButton:{
     width:'52%',
@@ -231,15 +308,26 @@ const styles = ScaledSheet.create({
     borderRadius:'20@ms',
     justifyContent:'center',
     alignItems:'center',
+  },
+  viewModeText:{
+    fontFamily:'Inter-SemiBold',
+    fontSize:RFPercentage(2.25),
+  },
+  selectedText:{    
+    color:'white',
+  },
+  unselectedText:{
+    color:'black',
+  },
+  selectedButton:{
+    backgroundColor:'#FF3008',
+  },
+  unselectedButton:{
     backgroundColor:'#FFF',
     borderWidth:'2@ms',
     borderColor:'black',
   },
-  remainingTasksText:{
-    fontFamily:'Inter-SemiBold',
-    fontSize:RFPercentage(2.25),
-    color:'black',
-  },
+
   aboutContainer:{
     flexDirection:'column',
     justifyContent:'flex-start',
@@ -359,4 +447,4 @@ const styles = ScaledSheet.create({
   },
 
 });
-export default AddEventScreen;
+export default EventDetailScreen;
