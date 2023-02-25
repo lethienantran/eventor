@@ -75,7 +75,15 @@ const EventDetailScreen = () => {
     //navigate to add task screen    
     console.warn('navigate to add task screen');
   };
-
+  
+  const setIcon = () => {
+    if(status === 'inprogress'){
+      return <Octicons name='pulse' style={[styles.eventStatusIcon, styles.inProgressIcon]}/>
+    }
+    else{
+      return <Feather name='check-circle' style={[styles.eventStatusIcon, styles.doneIcon]}/>
+    }
+  };
 
   const [eventName, setEventName] = useState('');
   const [location, setLocation] = useState('');
@@ -103,6 +111,7 @@ const EventDetailScreen = () => {
           setEventName(results.rows.item(0).eventName);
           setLocation(results.rows.item(0).location);
           setProgression(results.rows.item(0).eventProgress);
+          setStatus(results.rows.item(0).eventStatus);
           setDescription(results.rows.item(0).eventCaption);
         }, 
       );
@@ -123,10 +132,14 @@ const EventDetailScreen = () => {
           </View>
           <View style={styles.eventInfoContainer}>
             <View style={styles.eventInfoHeader}>
+              <View style={styles.eventNameContainer}>
               <Text style={styles.eventName}>
                 {eventName}
               </Text>
-              <Octicons name='pulse' style={styles.eventStatusIcon}/>
+              </View>
+              {progression !== 100 ? (<Octicons name='pulse'style={[styles.eventStatusIcon, styles.inProgressIcon]}/>): 
+                                         (<Feather name='check-circle'style={[styles.eventStatusIcon, styles.doneIcon]}/>)}
+
             </View>
             <View style={styles.eventLocationContainer}>
               <Feather name='map-pin' style={styles.mapPinIcon}/>
@@ -259,6 +272,11 @@ const styles = ScaledSheet.create({
     alignItems:'center',
     marginVertical:'1%',
 
+
+  },
+  eventNameContainer:{
+    width:'82%',
+    height:'100%',
   },
   eventName:{
     fontSize:RFPercentage(3.3),
@@ -267,7 +285,12 @@ const styles = ScaledSheet.create({
   },
   eventStatusIcon:{    
     fontSize:RFPercentage(4.25),
-    color:'black',
+  },
+  inProgressIcon:{
+    color:'#D9A900',
+  },
+  doneIcon:{
+    color:'#21B608',
   },
   eventLocationContainer:{
     flexDirection:'row',
