@@ -12,6 +12,7 @@ import {DBContext} from '../../../App';
 
 import eventsBanner from '../../../assets/images/eventsBanner.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AddTaskScreen from '../AddTaskScreen';
 
 const {height, width} = Dimensions.get('window');
 
@@ -27,6 +28,8 @@ const retrieveSelectedEventID = async () =>{
 
 const EventDetailScreen = () => {
   
+  const [data,setData] = useState([]);
+
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
 
@@ -73,7 +76,7 @@ const EventDetailScreen = () => {
 
   const onAddTaskPressed = () =>{
     //navigate to add task screen    
-    console.warn('navigate to add task screen');
+    navigation.navigate('AddTaskScreen');
   };
   
   const setIcon = () => {
@@ -117,6 +120,21 @@ const EventDetailScreen = () => {
       );
     });
   }, [currentSelectedEventID]);
+
+  const listItemView = item => {
+    return(
+      <View key={item.taskID} style={styles.taskContainer}>
+      <View style={styles.taskInfoContainter}>
+        <Octicons name='pulse' style={styles.taskStatusIcon}/>
+        <Text style={styles.taskName}>{item.taskName}</Text>
+      </View>
+      <Pressable style={styles.taskEditButton} onPress={onEditPressed}>
+        <Feather name='edit-3' style={styles.editTaskIcon}/>
+      </Pressable>
+    </View>
+    );
+  };
+
   return (
     <View style={styles.root}>
       <View style={styles.container}>
@@ -162,6 +180,12 @@ const EventDetailScreen = () => {
           {viewMode ==='remainingTasks' ? (
             <>
               <View style={styles.taskList}>
+                {/* <FlatList
+                  showsVerticalScrollIndicator={false}
+                  data={data}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({item}) => listItemView(item)}
+                /> */}
                 <View style={styles.taskContainer}>
                   <View style={styles.taskInfoContainter}>
                     <Octicons name='pulse' style={styles.taskStatusIcon}/>
