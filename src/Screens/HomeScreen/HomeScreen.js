@@ -1,20 +1,38 @@
-import {View, Text, Pressable, ImageBackground, Image} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  ImageBackground,
+  Image,
+  FlatList,
+} from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import React, {useState, useEffect, useContext} from 'react';
-import Logo from '../../components/Logo';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
+import moment from 'moment';
 import eventsBanner from '../../../assets/images/eventsBanner.png';
 import {DBContext} from '../../../App';
+import Logo from '../../components/Logo';
+
 const HomeScreen = () => {
+  //using db in screen/components
   const db = useContext(DBContext);
+  //data and setData useState for setting data
   const [data, setData] = useState([]);
+
+  //totalEvents, setTotalEvents useState for display TotalNumberOfEvents to screen
+  const [totalEvent, setTotalEvent] = useState();
+
+  //quote and set quote useState for calendar
   const [quote, setQuote] = useState('');
+  //theDayOfWeek and setTheDayOfWeek for calendar
   const [theDayOfWeek, setTheDayOfWeek] = useState('');
 
+  //quotes for calendar to be display everyday
   const quoteArray = [
     '"Happy Holy Day! \n God bless you."',
     '"May your \n Monday \n be productive."',
@@ -28,17 +46,18 @@ const HomeScreen = () => {
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
 
+  //addEventButton is Pressed?
   const addButtonPressed = () => {
     navigation.navigate('AddEventScreen');
   };
 
   // Get the current date
   const today = new Date();
-
   // Get the day of the week (0-6, where 0 is Sunday and 6 is Saturday)
   const dayOfWeek = today.getDay();
   //Get the day of the month (1-31)
   const dayOfMonth = today.getDate();
+  //checkDay to display on Screen
   const checkDay = () => {
     if (dayOfWeek === 0) {
       setQuote(quoteArray[0]);
@@ -78,14 +97,62 @@ const HomeScreen = () => {
           setData(temp);
         },
       );
+      tx.executeSql(
+        'SELECT COUNT(*) as count FROM events',
+        [],
+        (tx, results) => {
+          const count = results.rows.item(0).count;
+          setTotalEvent(count);
+        },
+      );
     });
   });
 
+  //listItemView for FlatList (item/cards) show on screen
+  const listItemView = item => {
+    //format dateTime
+    const eventStartTime = moment(new Date(item.eventStartTime)).format(
+      'MM/DD/YYYY',
+    );
+    const eventEndTime = moment(new Date(item.eventEndTime)).format(
+      'MM/DD/YYYY',
+    );
+    return (
+      <View key={item.eventID} style={styles.feedItem}>
+        <ImageBackground
+          source={eventsBanner}
+          resizeMode="cover"
+          style={{flex: 1}}
+          imageStyle={styles.itemImage}
+          blurRadius={5}>
+          <View style={styles.dateTimeContainer}>
+            <Text style={styles.dateTimeText}>
+              {eventStartTime} - {eventEndTime}
+            </Text>
+          </View>
+          <View style={styles.titleItemContainer}>
+            <Text style={styles.titleItemText}>{item.eventName}</Text>
+          </View>
+          <View style={styles.progressionItemContainer}>
+            <Text style={styles.progressionItemText}>Progress:</Text>
+            <Text style={styles.displayProgressionItemText}>
+              {item.eventProgress}%
+            </Text>
+          </View>
+        </ImageBackground>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.root}>
+      {/* Logo of The page */}
       <Logo />
+      {/* content of the Page */}
       <View style={styles.content}>
+        {/* first half content of page - calendar, see all button, total events display */}
         <View style={styles.detailContainer}>
+          {/* calendar */}
           <View style={styles.calendarContainer}>
             <View style={styles.dayContainer}>
               <Text style={styles.dayText}>{theDayOfWeek}</Text>
@@ -95,6 +162,7 @@ const HomeScreen = () => {
               <Text style={styles.quoteText}>{quote}</Text>
             </View>
           </View>
+          {/* see all and total Events display */}
           <View style={styles.statsContainer}>
             <View style={styles.seeAllContainer}>
               <View style={styles.seeAllTextContainer}>
@@ -115,71 +183,36 @@ const HomeScreen = () => {
             <View style={styles.totalEventContainer}>
               <Text style={styles.totalText}>Total</Text>
               <Text style={styles.eventText}>Events:</Text>
-              <Text style={styles.numberTotalText}>52</Text>
+              <Text style={styles.numberTotalText}>{totalEvent}</Text>
             </View>
           </View>
         </View>
-        <View style={styles.secondHalfDetailContainer}>
-          <View style={styles.inProgressTitleContainer}>
-            <View style={styles.inProgressTextContainer}>
-              <Text style={styles.inProgressText}> In-Progress Events </Text>
-            </View>
-            <View style={styles.inProgressIconContainer}>
-              <Pressable>
-                <FontAwesome
-                  name="angle-right"
-                  style={styles.inProgressIcon}
-                  color={'black'}
-                />
-              </Pressable>
-            </View>
+        {/* In Progress Title */}
+        <View style={styles.inProgressTitleContainer}>
+          <View style={styles.inProgressTextContainer}>
+            <Text style={styles.inProgressText}> In-Progress Events </Text>
           </View>
-          <View style={styles.feedContainer}>
-            <View style={styles.feedItem}>
-              <ImageBackground
-                source={eventsBanner}
-                resizeMode="cover"
-                style={{flex: 1}}
-                imageStyle={styles.itemImage}
-                blurRadius={5}>
-                <View style={styles.dateTimeContainer}>
-                  <Text style={styles.dateTimeText}>2/26/2023 8:00</Text>
-                </View>
-                <View style={styles.titleItemContainer}>
-                  <Text style={styles.titleItemText}>
-                    Brain Injury Art Show
-                  </Text>
-                </View>
-                <View style={styles.progressionItemContainer}>
-                  <Text style={styles.progressionItemText}>Progress:</Text>
-                  <Text style={styles.displayProgressionItemText}>67%</Text>
-                </View>
-              </ImageBackground>
-            </View>
-            <View style={styles.feedItem}>
-              <ImageBackground
-                source={eventsBanner}
-                resizeMode="cover"
-                style={{flex: 1}}
-                imageStyle={styles.itemImage}
-                blurRadius={5}>
-                <View style={styles.dateTimeContainer}>
-                  <Text style={styles.dateTimeText}>2/26/2023 8:00</Text>
-                </View>
-                <View style={styles.titleItemContainer}>
-                  <Text style={styles.titleItemText}>
-                    Brain Injury Art Show
-                  </Text>
-                </View>
-                <View style={styles.progressionItemContainer}>
-                  <Text style={styles.progressionItemText}>Progress:</Text>
-                  <Text style={styles.displayProgressionItemText}>67%</Text>
-                </View>
-              </ImageBackground>
-            </View>
+          <View style={styles.inProgressIconContainer}>
+            <Pressable>
+              <FontAwesome
+                name="angle-right"
+                style={styles.inProgressIcon}
+                color={'black'}
+              />
+            </Pressable>
           </View>
+        </View>
+        {/* Display events from database*/}
+        <View style={styles.feedContainer}>
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            data={data}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({item}) => listItemView(item)}
+          />
         </View>
       </View>
+      {/* Add event button navigate to add event page*/}
       <Pressable onPress={addButtonPressed}>
         <MaterialCommunityIcons
           name="plus-circle"
@@ -192,7 +225,6 @@ const HomeScreen = () => {
 };
 const styles = ScaledSheet.create({
   root: {
-    flex: 1,
     width: '100%',
     height: '100%',
   },
@@ -317,13 +349,9 @@ const styles = ScaledSheet.create({
     marginLeft: '4@ms',
     color: '#FF3008',
   },
-  secondHalfDetailContainer: {
-    width: '100%',
-    height: '61%',
-  },
   inProgressTitleContainer: {
     width: '100%',
-    height: '17%',
+    height: '10%',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -349,15 +377,15 @@ const styles = ScaledSheet.create({
   },
   feedContainer: {
     width: '100%',
-    height: '65%',
-    alignItems: 'center',
+    height: '40%',
   },
   feedItem: {
+    alignSelf: 'center',
+    marginTop: '20@vs',
     width: '86%',
-    height: '43%',
-    backgroundColor: 'grey',
+    height: '95@vs',
+    backgroundColor: '#777B7E',
     borderRadius: '25@ms',
-    marginTop: '13@vs',
   },
   itemImage: {
     borderRadius: '25@ms',
@@ -366,7 +394,7 @@ const styles = ScaledSheet.create({
   dateTimeContainer: {
     flexDirection: 'row',
     width: '100%',
-    height: '20%',
+    height: '22%',
     justifyContent: 'flex-end',
   },
   dateTimeText: {
@@ -378,7 +406,7 @@ const styles = ScaledSheet.create({
   },
   titleItemContainer: {
     width: '100%',
-    height: '44 %',
+    height: '42%',
     justifyContent: 'flex-end',
   },
   titleItemText: {
