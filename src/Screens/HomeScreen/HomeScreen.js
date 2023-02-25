@@ -1,15 +1,17 @@
 import {View, Text, Pressable, ImageBackground, Image} from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import Logo from '../../components/Logo';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
 import eventsBanner from '../../../assets/images/eventsBanner.png';
-
+import {DBContext} from '../../../App';
 const HomeScreen = () => {
+  const db = useContext(DBContext);
+  const [data, setData] = useState([]);
   const [quote, setQuote] = useState('');
   const [theDayOfWeek, setTheDayOfWeek] = useState('');
 
@@ -64,6 +66,19 @@ const HomeScreen = () => {
 
   useEffect(() => {
     checkDay();
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM events where events.eventStatus = ?',
+        ['inprogress'],
+        (tx, results) => {
+          var temp = [];
+          for (let i = 0; i < results.rows.length; ++i) {
+            temp.push(results.rows.item(i));
+          }
+          setData(temp);
+        },
+      );
+    });
   });
 
   return (
