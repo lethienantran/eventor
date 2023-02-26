@@ -1,14 +1,7 @@
-import {
-  View,
-  Text,
-  Pressable,
-  ImageBackground,
-  Image,
-  FlatList,
-} from 'react-native';
+import {View, Text, Pressable, ImageBackground, FlatList} from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -22,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const HomeScreen = () => {
   //using db in screen/components
   const db = useContext(DBContext);
+
   //data and setData useState for setting data
   const [data, setData] = useState([]);
 
@@ -55,15 +49,18 @@ const HomeScreen = () => {
   const onEventPressed = async selectedEventID => {
     // navigation.navigate('EventDetailScreen');
     AsyncStorage.setItem('selectedEventID', selectedEventID.toString())
-      .then(()=>{
-        console.log("SelectedEventID: " + selectedEventID.toString());
+      .then(() => {
+        console.log('SelectedEventID: ' + selectedEventID.toString());
         navigation.navigate('EventDetailScreen');
       })
-      .catch(error=>{
-        console.error('Error', 'Could not save SelectedEventID to AsyncStorage!');
+      .catch(error => {
+        console.error(
+          'Error',
+          'Could not save SelectedEventID to AsyncStorage!',
+        );
         console.error(error);
       });
-  }
+  };
 
   // Get the current date
   const today = new Date();
@@ -97,12 +94,15 @@ const HomeScreen = () => {
     }
   };
 
+  //run query, checkDay
   useEffect(() => {
     checkDay();
     db.transaction(tx => {
+      //TODO: CHANGE THIS TO UPCOMING INPROGRESS EVENT QUERY ORDER BY eventStartTime
+      //for populating in progress event
       tx.executeSql(
-        'SELECT * FROM events where events.eventStatus = ?',
-        ['inprogress'],
+        'SELECT * FROM events WHERE events.eventProgress < 100',
+        [],
         (tx, results) => {
           var temp = [];
           for (let i = 0; i < results.rows.length; ++i) {
@@ -111,6 +111,8 @@ const HomeScreen = () => {
           setData(temp);
         },
       );
+      //TODO: DISCUSS IF WE SHOULD DISPLAY TOTAL EVENTS or TOTAL UPCOMING EVENTS
+      //for display totalEvent
       tx.executeSql(
         'SELECT COUNT(*) as count FROM events',
         [],
@@ -132,7 +134,10 @@ const HomeScreen = () => {
       'MM/DD/YYYY',
     );
     return (
-      <Pressable key={item.eventID} style={styles.feedItem} onPress={() => onEventPressed(item.eventID)}>
+      <Pressable
+        key={item.eventID}
+        style={styles.feedItem}
+        onPress={() => onEventPressed(item.eventID)}>
         <ImageBackground
           source={eventsBanner}
           resizeMode="cover"

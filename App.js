@@ -1,4 +1,4 @@
-import React, {createContext} from 'react';
+import React, {createContext, useEffect} from 'react';
 import AddEventScreen from './src/Screens/AddEventScreen';
 import AddTaskScreen from './src/Screens/AddTaskScreen';
 import EditEventScreen from './src/Screens/EditEventScreen';
@@ -29,6 +29,29 @@ const db = SQLite.openDatabase(
 export const DBContext = createContext({});
 
 const App = () => {
+  //update eventProgress every time, eventProgress = all done task of the same eventID / all task of the same eventID
+  useEffect(() => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `
+      UPDATE events
+      SET eventProgress = ROUND(
+        (SELECT CAST(SUM(CASE WHEN taskStatus = 'done' THEN 1 ELSE 0 END) AS FLOAT) / CAST(COUNT(*) AS FLOAT) * 100
+        FROM tasks
+        WHERE tasks.eventID = events.eventID
+        GROUP BY eventID
+        )
+      )
+    `,
+        [],
+        (_, result) => {},
+        (_, error) => {
+          console.log('Error updating event progress', error);
+        },
+      );
+    });
+  });
+
   return (
     <DBContext.Provider value={db}>
       <NavigationContainer>

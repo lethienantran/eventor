@@ -16,9 +16,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import Logo from '../../components/Logo';
-
 import {DBContext} from '../../../App';
-
 import eventsBanner from '../../../assets/images/eventsBanner.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AddTaskScreen from '../AddTaskScreen';
@@ -84,7 +82,7 @@ const EventDetailScreen = () => {
 
   const onAddTaskPressed = () => {
     //navigate to add task screen
-    navigation.navigate('AddTaskScreen');
+    navigation.navigate('AddTaskScreen', {eventName: eventName});
   };
 
   const [eventName, setEventName] = useState('');
@@ -134,8 +132,17 @@ const EventDetailScreen = () => {
     return (
       <View key={item.taskID} style={styles.taskContainer}>
         <View style={styles.taskInfoContainter}>
-          {item.taskStatus === 'incomplete' ? (<Octicons name="pulse" style={[styles.taskStatusIcon, styles.taskIncomplete]} />) 
-                                            : (<Feather name="check-circle" style={[styles.taskStatusIcon, styles.taskDone]} />)}
+          {item.taskStatus === 'incomplete' ? (
+            <Octicons
+              name="pulse"
+              style={[styles.taskStatusIcon, styles.taskIncomplete]}
+            />
+          ) : (
+            <Feather
+              name="check-circle"
+              style={[styles.taskStatusIcon, styles.taskDone]}
+            />
+          )}
           <Text style={styles.taskName}>{item.taskName}</Text>
         </View>
         <Pressable style={styles.taskEditButton} onPress={onEditPressed}>
@@ -435,11 +442,11 @@ const styles = ScaledSheet.create({
   taskStatusIcon: {
     fontSize: RFPercentage(2.5),
   },
-  taskIncomplete:{
-    color:'#D9A900',
+  taskIncomplete: {
+    color: '#D9A900',
   },
-  taskDone:{
-    color:'#21B608',
+  taskDone: {
+    color: '#21B608',
   },
   taskName: {
     marginLeft: '4%',
