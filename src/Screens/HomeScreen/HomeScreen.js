@@ -248,7 +248,7 @@ const styles = ScaledSheet.create({
     height: '100%',
   },
   content: {
-    width: '100%',
+    width: '99%',
     height: '91%',
   },
   addButtonIcon: {
@@ -298,12 +298,16 @@ const styles = ScaledSheet.create({
   quoteContainer: {
     width: '100%',
     height: '40%',
+    // backgroundColor:'green',
+    flexDirection:'column',
+    justifyContent:'flex-end',
   },
   quoteText: {
-    marginTop: '20@vs',
-    marginRight: '7@ms',
+    marginBottom:'7@ms',
+    marginRight: '10@ms',
     textAlign: 'right',
-    alignSelf: 'flex-end',
+    textAlignVertical:'bottom',
+    // alignSelf: 'flex-end',
     fontFamily: 'Inter-Medium',
     fontStyle: 'italic',
     color: 'black',
@@ -404,7 +408,7 @@ const styles = ScaledSheet.create({
   },
   feedItem: {
     alignSelf: 'center',
-    marginTop: '20@vs',
+    marginTop: '16@vs',
     width: '86%',
     height: '95@vs',
     backgroundColor: '#777B7E',
