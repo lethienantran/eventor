@@ -6,6 +6,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
+
 import moment from 'moment';
 import eventsBanner from '../../../assets/images/eventsBanner.png';
 import {DBContext} from '../../../App';
@@ -41,7 +42,6 @@ const HomeScreen = () => {
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
 
-  //addEventButton is Pressed?
   const addButtonPressed = () => {
     navigation.navigate('AddEventScreen');
   };
