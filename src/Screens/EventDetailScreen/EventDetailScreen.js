@@ -82,7 +82,7 @@ const EventDetailScreen = () => {
 
   const onAddTaskPressed = () => {
     //navigate to add task screen
-    navigation.navigate('AddTaskScreen', {eventName: eventName});
+    navigation.navigate('AddTaskScreen');
   };
 
   const [eventName, setEventName] = useState('');

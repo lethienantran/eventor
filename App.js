@@ -34,14 +34,16 @@ const App = () => {
     db.transaction(tx => {
       tx.executeSql(
         `
-      UPDATE events
-      SET eventProgress = ROUND(
-        (SELECT CAST(SUM(CASE WHEN taskStatus = 'done' THEN 1 ELSE 0 END) AS FLOAT) / CAST(COUNT(*) AS FLOAT) * 100
-        FROM tasks
-        WHERE tasks.eventID = events.eventID
-        GROUP BY eventID
-        )
-      )
+        UPDATE events
+        SET eventProgress =ROUND( (
+            SELECT CAST(SUM(done_count) AS FLOAT) / CAST(SUM(total_count) AS FLOAT) * 100
+            FROM (
+                SELECT eventID, COUNT(*) AS total_count, SUM(CASE WHEN taskStatus = 'done' THEN 1 ELSE 0 END) AS done_count
+                FROM tasks
+                GROUP BY eventID
+            ) t
+            WHERE t.eventID = events.eventID
+        ))
     `,
         [],
         (_, result) => {},
