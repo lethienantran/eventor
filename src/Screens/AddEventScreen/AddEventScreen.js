@@ -53,7 +53,7 @@ const AddEventScreen = () => {
             <DatePicker
               minimumDate={startDate}
               mode={'datepicker'}
-              selected={date}
+              selected={'today'}
               onDateChanged={handleChange}
             />
             <Pressable onPress={handleOnPress}>
