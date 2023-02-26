@@ -377,10 +377,12 @@ const styles = ScaledSheet.create({
   inProgressTextContainer: {
     width: '86%',
     height: '100%',
+    flexDirection:'column',
+    justifyContent:'center',
   },
   inProgressText: {
     fontSize: RFPercentage(3.75),
-    marginTop: '28@vs',
+    marginTop: '6@vs',
     marginLeft: '20@ms',
     color: 'black',
     fontFamily: 'OpenSans-SemiBold',
@@ -388,10 +390,12 @@ const styles = ScaledSheet.create({
   inProgressIconContainer: {
     width: '14%',
     height: '100%',
+    flexDirection:'column',
+    justifyContent:'center',
   },
   inProgressIcon: {
     fontSize: RFPercentage(3.75),
-    marginTop: '32@vs',
+    marginTop: '8@vs',
     marginLeft: '19@ms',
   },
   feedContainer: {
