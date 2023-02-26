@@ -23,7 +23,7 @@ const styles = ScaledSheet.create({
   },
   AddButtonContainer:{
     width:'50%',
-    height:'50%',
+    height:'55@vs',
   },
   UpdateButtonContainer:{
     width:'60%',

@@ -1,5 +1,5 @@
 import {View, Text, Pressable} from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
 import Inoicons from 'react-native-vector-icons/Ionicons';
@@ -8,11 +8,62 @@ import {RFPercentage} from 'react-native-responsive-fontsize';
 import CustomInputField from '../../components/CustomInputField';
 import {ScrollView} from 'react-native-gesture-handler';
 import CustomButton from '../../components/CustomButton';
+import {DBContext} from '../../../App';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const retrieveSelectedEventID = async () => {
+  try {
+    const currSelectedEventID = await AsyncStorage.getItem('selectedEventID');
+    return currSelectedEventID !== null ? currSelectedEventID : null;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const AddTaskScreen = () => {
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
+  const db = useContext(DBContext);
 
-  const [eventName, setEventName] = useState('hello');
+  const [currentSelectedEventID, setCurrentSelectedEventID] = useState();
+
+  const setSelectedEventID = async () => {
+    try {
+      const val = await retrieveSelectedEventID();
+      if (val !== null) {
+        return val;
+      } else {
+        console.error('No SelectedEventID found');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    setSelectedEventID().then(setCurrentSelectedEventID);
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM events WHERE eventID = ?',
+        [currentSelectedEventID],
+        (tx, results) => {
+          setEventName(results.rows.item(0).eventName);
+        },
+      );
+      tx.executeSql(
+        'SELECT * FROM tasks WHERE tasks.eventID = ?',
+        [currentSelectedEventID],
+        (tx, results) => {
+          var temp = [];
+          for (let i = 0; i < results.rows.length; ++i) {
+            temp.push(results.rows.item(i));
+          }
+          setData(temp);
+        },
+      );
+    });
+  }, [currentSelectedEventID]);
+
+  const [eventName, setEventName] = useState('');
   const [taskName, setTaskName] = useState('');
   const [taskStatus, setTaskStatus] = useState('Incomplete');
 
@@ -101,7 +152,7 @@ const styles = ScaledSheet.create({
   taskInfoContainer: {
     flexDirection: 'column',
     width: '100%',
-    height: '72%',
+    height: '428@vs',
     // backgroundColor:'grey',
   },
   buttonContainer: {

@@ -87,24 +87,6 @@ const EventDetailScreen = () => {
     navigation.navigate('AddTaskScreen');
   };
 
-  const setIcon = () => {
-    if (status === 'inprogress') {
-      return (
-        <Octicons
-          name="pulse"
-          style={[styles.eventStatusIcon, styles.inProgressIcon]}
-        />
-      );
-    } else {
-      return (
-        <Feather
-          name="check-circle"
-          style={[styles.eventStatusIcon, styles.doneIcon]}
-        />
-      );
-    }
-  };
-
   const [eventName, setEventName] = useState('');
   const [location, setLocation] = useState('');
   const [status, setStatus] = useState('');
@@ -152,7 +134,8 @@ const EventDetailScreen = () => {
     return (
       <View key={item.taskID} style={styles.taskContainer}>
         <View style={styles.taskInfoContainter}>
-          <Octicons name="pulse" style={styles.taskStatusIcon} />
+          {item.taskStatus === 'incomplete' ? (<Octicons name="pulse" style={[styles.taskStatusIcon, styles.taskIncomplete]} />) 
+                                            : (<Feather name="check-circle" style={[styles.taskStatusIcon, styles.taskDone]} />)}
           <Text style={styles.taskName}>{item.taskName}</Text>
         </View>
         <Pressable style={styles.taskEditButton} onPress={onEditPressed}>
@@ -451,7 +434,12 @@ const styles = ScaledSheet.create({
   },
   taskStatusIcon: {
     fontSize: RFPercentage(2.5),
-    color: 'black',
+  },
+  taskIncomplete:{
+    color:'#D9A900',
+  },
+  taskDone:{
+    color:'#21B608',
   },
   taskName: {
     marginLeft: '4%',
