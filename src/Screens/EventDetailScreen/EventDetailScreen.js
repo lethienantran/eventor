@@ -20,6 +20,7 @@ import {DBContext} from '../../../App';
 import eventsBanner from '../../../assets/images/eventsBanner.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AddTaskScreen from '../AddTaskScreen';
+import TaskFeed from '../../components/TaskFeed';
 
 const {height, width} = Dimensions.get('window');
 
@@ -232,14 +233,15 @@ const EventDetailScreen = () => {
 
           {viewMode === 'remainingTasks' ? (
             <>
-              <View style={styles.taskList}>
+              {/* <View style={styles.taskList}>
                 <FlatList
                   showsVerticalScrollIndicator={false}
                   data={data}
                   keyExtractor={(item, index) => index.toString()}
                   renderItem={({item}) => listItemView(item)}
                 />
-              </View>
+              </View> */}
+              <TaskFeed eventName={eventName} eventID={currentSelectedEventID}/>
               <View style={styles.actionBar}>
                 <View style={styles.progressionContainer}>
                   <View style={styles.progressionHeader}>

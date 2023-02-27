@@ -8,21 +8,20 @@ import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 
-const TaskFeed = (eventName, eventID) => {
-  const navigation = useNavigation();
+const TaskFeed = (props) => {
 
-  //Array storing data through useState as setData
   const [data, setData] = useState([]);
 
-  //use app's existed & opened database
+  //call useNavigation to be able to navigate around
+  const navigation = useNavigation();
   const db = useContext(DBContext);
 
+  
   useEffect(() => {
-    // setSelectedEventID().then(setCurrentSelectedEventID);
     db.transaction(tx => {
       tx.executeSql(
         'SELECT * FROM tasks WHERE tasks.eventID = ?',
-        [eventID],
+        [props.eventID],
         (tx, results) => {
           var temp = [];
           for (let i = 0; i < results.rows.length; ++i) {
@@ -32,7 +31,7 @@ const TaskFeed = (eventName, eventID) => {
         },
       );
     });
-  }, [data]);
+  },[data]);
 
   const listItemView = item => {
     return (
