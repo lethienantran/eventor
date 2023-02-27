@@ -1,4 +1,4 @@
-import {View, Text, Pressable} from 'react-native';
+import {Text, Pressable} from 'react-native';
 import React from 'react';
 import { ScaledSheet } from 'react-native-size-matters';
 import { RFPercentage } from 'react-native-responsive-fontsize';
@@ -26,8 +26,8 @@ const styles = ScaledSheet.create({
     height:'55@vs',
   },
   UpdateButtonContainer:{
-    width:'60%',
-    height:'50%',
+    width:'55%',
+    height:'55@vs',
   },
   ButtonText:{
     fontSize:RFPercentage(3.5),

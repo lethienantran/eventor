@@ -2,7 +2,6 @@ import {View, Text, Pressable} from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
-import Inoicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import Logo from '../../components/Logo';
 import {RFPercentage} from 'react-native-responsive-fontsize';
@@ -11,7 +10,6 @@ import {ScrollView} from 'react-native-gesture-handler';
 import CustomButton from '../../components/CustomButton';
 import {DBContext} from '../../../App';
 import Octicons from 'react-native-vector-icons/Octicons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EditTaskScreen = ({route}) => {
   //call useNavigation to be able to navigate around
@@ -30,17 +28,33 @@ const EditTaskScreen = ({route}) => {
     setTaskStatus(taskStatus==='incomplete' ? 'done' : 'incomplete');
   };
 
-  const onEditPressed = () => {
+  const onUpdatePressed = () => {
     db.transaction(tx => {
       tx.executeSql(
-        'INSERT INTO tasks (taskName, taskStatus, eventID) VALUES (?, ?, ?)',
-        [taskName, 'incomplete', currentSelectedEventID],
+        'UPDATE tasks SET taskName = ?, taskStatus = ? WHERE taskID = ? AND eventID = ?',
+        [taskName, taskStatus, route.params.taskID, route.params.eventID],
         (tx, results) => {
-          console.log('Task \"' + taskName + '\" successfully added to ' + eventName + '\'s id:' + currentSelectedEventID);
+          console.log('TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID + ' successfully updated. Status: ' + taskStatus);
           navigation.goBack();   
         },
         error => {
-          console.log("Error adding task to database: ", error);
+          console.log('Error update TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID, error);
+        }
+      );
+    });
+  };
+
+  const onDeletePressed = () => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'DELETE FROM tasks WHERE taskID = ? AND eventID = ?',
+        [route.params.taskID, route.params.eventID],
+        (tx, results) => {
+          console.log('TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID + ' successfully deleted.');
+          navigation.goBack();   
+        },
+        error => {
+          console.log('Error delete TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID, error);
         }
       );
     });
@@ -89,8 +103,11 @@ const EditTaskScreen = ({route}) => {
               onPress={onTaskStatusPressed}
             />
           </View>
-          <View style={styles.buttonContainer}>
-            <CustomButton onPress={onEditPressed} type="Add" text="Update" />
+          <View style={styles.buttonsContainer}>
+            <CustomButton onPress={onUpdatePressed} type="Update" text="Update" />
+            <Pressable style={styles.deleteButtonContainer} onPress={onDeletePressed}>
+              <Feather name='trash-2' style={styles.deleteIcon}/>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -151,13 +168,20 @@ const styles = ScaledSheet.create({
     height: '428@vs',
     // backgroundColor:'grey',
   },
-  buttonContainer: {
+  buttonsContainer: {
     width: '100%',
     height: '20%',
-    // backgroundColor:'yellow',
-    flexDirection: 'column',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    // backgroundColor:'yellow',
+  },
+  deleteButtonContainer:{
+    // backgroundColor:'grey',
+  },
+  deleteIcon:{
+    fontSize:RFPercentage(5),
+    color:'#ABABAB',
   },
 });
 export default EditTaskScreen;
