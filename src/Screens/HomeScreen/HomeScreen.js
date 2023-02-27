@@ -246,6 +246,7 @@ const styles = ScaledSheet.create({
   root: {
     width: '100%',
     height: '100%',
+    backgroundColor:'white',
   },
   content: {
     width: '99%',
@@ -408,7 +409,7 @@ const styles = ScaledSheet.create({
   },
   feedItem: {
     alignSelf: 'center',
-    marginTop: '16@vs',
+    marginVertical: '15@vs',
     width: '86%',
     height: '95@vs',
     backgroundColor: '#777B7E',

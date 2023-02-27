@@ -10,6 +10,7 @@ import {ScrollView} from 'react-native-gesture-handler';
 import CustomButton from '../../components/CustomButton';
 import {DBContext} from '../../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const retrieveSelectedEventID = async () => {
   try {
     const currSelectedEventID = await AsyncStorage.getItem('selectedEventID');
@@ -71,7 +72,21 @@ const AddTaskScreen = () => {
     navigation.goBack();
   };
 
-  const onCreatePressed = () => {};
+  const onCreatePressed = () => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'INSERT INTO tasks (taskName, taskStatus, eventID) VALUES (?, ?, ?)',
+        [taskName, 'incomplete', currentSelectedEventID],
+        (tx, results) => {
+          console.log('Task \"' + taskName + '\" successfully added to ' + eventName + '\'s id:' + currentSelectedEventID);
+          navigation.goBack();   
+        },
+        error => {
+          console.log("Error adding task to database: ", error);
+        }
+      );
+    });
+  };
   return (
     <ScrollView contentContainerStyle={styles.root}>
       <View style={styles.container}>
