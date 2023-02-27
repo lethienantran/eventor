@@ -11,6 +11,7 @@ import eventsBanner from '../../../assets/images/eventsBanner.png';
 import {DBContext} from '../../../App';
 import Logo from '../../components/Logo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const HomeScreen = () => {
   //variables initialization
@@ -143,9 +144,10 @@ const HomeScreen = () => {
       'MM/DD/YYYY',
     );
     return (
-      <Pressable
+      <TouchableOpacity
         key={item.eventID}
         style={styles.feedItem}
+        activeOpacity={0.7}
         onPress={() => onEventPressed(item.eventID)}>
         <ImageBackground
           source={eventsBanner}
@@ -168,7 +170,7 @@ const HomeScreen = () => {
             </Text>
           </View>
         </ImageBackground>
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 

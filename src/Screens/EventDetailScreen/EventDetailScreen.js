@@ -1,12 +1,10 @@
 import {
   View,
   Text,
-  StyleSheet,
   Dimensions,
   Pressable,
   ImageBackground,
   ScrollView,
-  FlatList,
 } from 'react-native';
 import React, {useContext, useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
@@ -34,7 +32,12 @@ const retrieveSelectedEventID = async () => {
 };
 
 const EventDetailScreen = () => {
-  const [data, setData] = useState([]);
+
+  const [eventName, setEventName] = useState('');
+  const [location, setLocation] = useState('');
+  const [progression, setProgression] = useState('');
+  const [description, setDescription] = useState('');
+  const [viewMode, setViewMode] = useState('description');
 
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
@@ -54,6 +57,22 @@ const EventDetailScreen = () => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    setSelectedEventID().then(setCurrentSelectedEventID);
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM events WHERE eventID = ?',
+        [currentSelectedEventID],
+        (tx, results) => {
+          setEventName(results.rows.item(0).eventName);
+          setLocation(results.rows.item(0).location);
+          setProgression(results.rows.item(0).eventProgress);
+          setDescription(results.rows.item(0).eventCaption);
+        },
+      );
+    });
+  }, [currentSelectedEventID]);
 
   const onBackPressed = async () => {
     try {
@@ -76,22 +95,10 @@ const EventDetailScreen = () => {
     }
   };
 
-  const onEditPressed = () => {
-    //navigate to add task screen
-    console.warn('navigate to edit task screen');
-  };
-
   const onAddTaskPressed = () => {
     //navigate to add task screen
     navigation.navigate('AddTaskScreen');
   };
-
-  const [eventName, setEventName] = useState('');
-  const [location, setLocation] = useState('');
-  const [status, setStatus] = useState('');
-  const [progression, setProgression] = useState('');
-  const [description, setDescription] = useState('');
-  const [viewMode, setViewMode] = useState('description');
 
   const onDescriptionPressed = () => {
     setViewMode('description');
@@ -99,58 +106,6 @@ const EventDetailScreen = () => {
 
   const onRemainingTasksPressed = () => {
     setViewMode('remainingTasks');
-  };
-
-  useEffect(() => {
-    setSelectedEventID().then(setCurrentSelectedEventID);
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM events WHERE eventID = ?',
-        [currentSelectedEventID],
-        (tx, results) => {
-          setEventName(results.rows.item(0).eventName);
-          setLocation(results.rows.item(0).location);
-          setProgression(results.rows.item(0).eventProgress);
-          setStatus(results.rows.item(0).eventStatus);
-          setDescription(results.rows.item(0).eventCaption);
-        },
-      );
-      tx.executeSql(
-        'SELECT * FROM tasks WHERE tasks.eventID = ?',
-        [currentSelectedEventID],
-        (tx, results) => {
-          var temp = [];
-          for (let i = 0; i < results.rows.length; ++i) {
-            temp.push(results.rows.item(i));
-          }
-          setData(temp);
-        },
-      );
-    });
-  }, [currentSelectedEventID]);
-
-  const listItemView = item => {
-    return (
-      <View key={item.taskID} style={styles.taskContainer}>
-        <View style={styles.taskInfoContainter}>
-          {item.taskStatus === 'incomplete' ? (
-            <Octicons
-              name="pulse"
-              style={[styles.taskStatusIcon, styles.taskIncomplete]}
-            />
-          ) : (
-            <Feather
-              name="check-circle"
-              style={[styles.taskStatusIcon, styles.taskDone]}
-            />
-          )}
-          <Text style={styles.taskName}>{item.taskName}</Text>
-        </View>
-        <Pressable style={styles.taskEditButton} onPress={onEditPressed}>
-          <Feather name="edit-3" style={styles.editTaskIcon} />
-        </Pressable>
-      </View>
-    );
   };
 
   return (
@@ -233,14 +188,6 @@ const EventDetailScreen = () => {
 
           {viewMode === 'remainingTasks' ? (
             <>
-              {/* <View style={styles.taskList}>
-                <FlatList
-                  showsVerticalScrollIndicator={false}
-                  data={data}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({item}) => listItemView(item)}
-                />
-              </View> */}
               <TaskFeed eventName={eventName} eventID={currentSelectedEventID}/>
               <View style={styles.actionBar}>
                 <View style={styles.progressionContainer}>
@@ -394,7 +341,6 @@ const styles = ScaledSheet.create({
     borderWidth: '2@ms',
     borderColor: 'black',
   },
-
   aboutContainer: {
     flexDirection: 'column',
     justifyContent: 'flex-start',
@@ -415,57 +361,6 @@ const styles = ScaledSheet.create({
     fontFamily: 'Inter-Regular',
     color: '#ABABAB',
     fontSize: RFPercentage(2.2),
-  },
-  taskList: {
-    paddingVertical: '2.5%',
-    width: '100%',
-    height: '38%',
-    flexDirection: 'column',
-  },
-  taskContainer: {
-    marginVertical: '3.2%',
-    width: '100%',
-    height: '55@vs',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    paddingHorizontal: '6%',
-    borderWidth: '2@ms',
-    borderColor: 'black',
-    borderRadius: '20@ms',
-  },
-  taskInfoContainter: {
-    flexDirection: 'row',
-    width: '88%',
-    height: '100%',
-    alignItems: 'center',
-  },
-  taskStatusIcon: {
-    fontSize: RFPercentage(2.5),
-  },
-  taskIncomplete: {
-    color: '#D9A900',
-  },
-  taskDone: {
-    color: '#21B608',
-  },
-  taskName: {
-    marginLeft: '4%',
-    fontSize: RFPercentage(2.25),
-    fontFamily: 'Inter-Regular',
-    color: 'black',
-  },
-  taskEditButton: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    width: '10%',
-    height: '100%',
-  },
-  editTaskIcon: {
-    fontSize: RFPercentage(2.5),
-    color: 'black',
   },
   actionBar: {
     width: '100%',

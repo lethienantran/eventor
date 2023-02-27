@@ -3,7 +3,6 @@ import React, {useContext, useEffect, useState} from 'react';
 import { ScaledSheet } from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import {DBContext} from '../../../App';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
