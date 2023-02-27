@@ -6,7 +6,6 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
-
 import moment from 'moment';
 import eventsBanner from '../../../assets/images/eventsBanner.png';
 import {DBContext} from '../../../App';
@@ -14,8 +13,12 @@ import Logo from '../../components/Logo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = () => {
+  //variables initialization
   //using db in screen/components
   const db = useContext(DBContext);
+
+  //call useNavigation to be able to navigate around
+  const navigation = useNavigation();
 
   //data and setData useState for setting data
   const [data, setData] = useState([]);
@@ -39,13 +42,25 @@ const HomeScreen = () => {
     '"Saturday is a day \n for relaxation \n  and family"',
   ];
 
-  //call useNavigation to be able to navigate around
-  const navigation = useNavigation();
+  // Get the current date
+  const today = new Date();
+  // Get the day of the week (0-6, where 0 is Sunday and 6 is Saturday)
+  const dayOfWeek = today.getDay();
+  //Get the day of the month (1-31)
+  const dayOfMonth = today.getDate();
 
+  //function declaration:
+  //use when add button is pressed, use to navigate to AddEventScreen screen
   const addButtonPressed = () => {
     navigation.navigate('AddEventScreen');
   };
 
+  //use when see all button is pressed, use to navigate to FilteredEventScreen screen
+  const seeAllButtonPressed = () => {
+    navigation.navigate('FilteredEventScreen');
+  };
+
+  //use when an event item is pressed to store selectedEventID into asyncstorage
   const onEventPressed = async selectedEventID => {
     // navigation.navigate('EventDetailScreen');
     AsyncStorage.setItem('selectedEventID', selectedEventID.toString())
@@ -62,12 +77,6 @@ const HomeScreen = () => {
       });
   };
 
-  // Get the current date
-  const today = new Date();
-  // Get the day of the week (0-6, where 0 is Sunday and 6 is Saturday)
-  const dayOfWeek = today.getDay();
-  //Get the day of the month (1-31)
-  const dayOfMonth = today.getDate();
   //checkDay to display on Screen
   const checkDay = () => {
     if (dayOfWeek === 0) {
@@ -183,22 +192,21 @@ const HomeScreen = () => {
           </View>
           {/* see all and total Events display */}
           <View style={styles.statsContainer}>
-            <View style={styles.seeAllContainer}>
+            <Pressable
+              onPress={seeAllButtonPressed}
+              style={styles.seeAllContainer}>
               <View style={styles.seeAllTextContainer}>
-                <Pressable>
-                  <Text style={styles.seeAllText}>See All</Text>
-                </Pressable>
+                <Text style={styles.seeAllText}>See All</Text>
               </View>
               <View style={styles.seeAllIconContainer}>
-                <Pressable>
-                  <FontAwesome5
-                    name="arrow-right"
-                    style={styles.rightArrowIcon}
-                    color={'white'}
-                  />
-                </Pressable>
+                <FontAwesome5
+                  name="arrow-right"
+                  style={styles.rightArrowIcon}
+                  color={'white'}
+                />
               </View>
-            </View>
+            </Pressable>
+
             <View style={styles.totalEventContainer}>
               <Text style={styles.totalText}>Total</Text>
               <Text style={styles.eventText}>Events:</Text>
@@ -246,7 +254,7 @@ const styles = ScaledSheet.create({
   root: {
     width: '100%',
     height: '100%',
-    backgroundColor:'white',
+    backgroundColor: 'white',
   },
   content: {
     width: '99%',
@@ -300,14 +308,14 @@ const styles = ScaledSheet.create({
     width: '100%',
     height: '40%',
     // backgroundColor:'green',
-    flexDirection:'column',
-    justifyContent:'flex-end',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
   },
   quoteText: {
-    marginBottom:'7@ms',
+    marginBottom: '7@ms',
     marginRight: '10@ms',
     textAlign: 'right',
-    textAlignVertical:'bottom',
+    textAlignVertical: 'bottom',
     // alignSelf: 'flex-end',
     fontFamily: 'Inter-Medium',
     fontStyle: 'italic',
@@ -382,8 +390,8 @@ const styles = ScaledSheet.create({
   inProgressTextContainer: {
     width: '86%',
     height: '100%',
-    flexDirection:'column',
-    justifyContent:'center',
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
   inProgressText: {
     fontSize: RFPercentage(3.75),
@@ -395,8 +403,8 @@ const styles = ScaledSheet.create({
   inProgressIconContainer: {
     width: '14%',
     height: '100%',
-    flexDirection:'column',
-    justifyContent:'center',
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
   inProgressIcon: {
     fontSize: RFPercentage(3.75),
