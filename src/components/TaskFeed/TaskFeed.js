@@ -50,16 +50,17 @@ const TaskFeed = (props) => {
           )}
           <Text style={styles.taskName}>{item.taskName}</Text>
         </View>
-        <Pressable style={styles.taskEditButton} onPress={onEditPressed}>
+        <Pressable style={styles.taskEditButton} onPress={()=> onEditPressed(item.taskStatus, props.eventName, item.taskName, item.taskID, props.eventID)}>
           <Feather name="edit-3" style={styles.editTaskIcon} />
         </Pressable>
       </View>
     );
   };
 
-  const onEditPressed = () => {
-    //navigate to add task screen
-    console.warn('navigate to edit task screen');
+  const onEditPressed = (selectedTaskStatus, selectedEventName, selectedTaskName, selectedTaskID, selectedEventID) => {
+    //navigate to edit task screen
+    navigation.navigate('EditTaskScreen', 
+                      {taskStatus: selectedTaskStatus, eventName: selectedEventName, taskName: selectedTaskName, taskID: selectedTaskID, eventID: selectedEventID});
   };
 
   return (

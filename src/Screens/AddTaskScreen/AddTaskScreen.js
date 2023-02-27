@@ -50,17 +50,6 @@ const AddTaskScreen = () => {
           setEventName(results.rows.item(0).eventName);
         },
       );
-      tx.executeSql(
-        'SELECT * FROM tasks WHERE tasks.eventID = ?',
-        [currentSelectedEventID],
-        (tx, results) => {
-          var temp = [];
-          for (let i = 0; i < results.rows.length; ++i) {
-            temp.push(results.rows.item(i));
-          }
-          setData(temp);
-        },
-      );
     });
   }, [currentSelectedEventID]);
 
