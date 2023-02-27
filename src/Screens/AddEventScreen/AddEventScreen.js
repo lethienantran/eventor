@@ -9,26 +9,72 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
+// Icons and Fonts
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import Calendar from 'react-native-vector-icons/AntDesign';
-import DatePicker from 'react-native-modern-datepicker';
-import {getToday, getFormatedDate} from 'react-native-modern-datepicker';
+import DatePicker from 'react-native-date-picker';
 
+// Database
 import {TextInput} from 'react-native-gesture-handler';
+import {DBContext} from '../../../App';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomButton from '../../components/CustomButton';
+// Images
+import {launchImageLibrary} from 'react-native-image-picker';
+import RNFS from 'react-native-fs';
+import {CALLBACK_TYPE} from 'react-native-gesture-handler/lib/typescript/handlers/gestures/gesture';
 
 const AddEventScreen = () => {
   const today = new Date();
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState(false);
 
-  const startDate = getFormatedDate(
-    today.setDate(today.getDate() + 1, 'YYYY/MM/DD'),
-  );
+  /* Storing User Data entries */
+  const [eventName, setEventName] = useState('');
+  const [eventDescription, setEventDescription] = useState('');
+  const [eventLocation, setEventLocation] = useState('');
+  const [eventStartTime, setEventStartTime] = useState(new Date());
+  const [eventEndTime, setEventEndTime] = useState(new Date());
+
+  /* Setting Img UseState */
+  const [image, setImage] = useState();
+
+  /*Inputting data in DB*/
+
+  const db = useContext(DBContext);
+  const createButtonPressed = async imagePath => {
+    try {
+      const imageData = await RNFS.readFile(imagePath, 'base64');
+      db.transaction(tx => {
+        tx.executeSql(
+          `INSERT INTO events 
+        (eventName, eventStartTime, eventEndTime, eventCaption, eventProgress, location)
+        VALUES(?,?,?,?,?,?)
+        `,
+          [
+            eventName,
+            eventStartTime.toString(),
+            eventEndTime.toString(),
+            eventDescription,
+            0,
+            eventLocation,
+          ],
+          (tx, results) => {
+            console.log('successfuly created event');
+          },
+          error => {
+            console.log(error);
+          },
+        );
+      });
+    } catch (error) {
+      console.log('error reading file for image', error);
+    }
+  };
+
   function handleOnPress() {
     setOpen(!open);
   }
@@ -36,32 +82,42 @@ const AddEventScreen = () => {
     setDate(propDate);
   }
 
+  function browseFunc() {
+    const options = {};
+    launchImageLibrary(options, response => {
+      console.log('Image Selected:', response.assets[0].uri);
+      setImage(response.assets[0].uri);
+      console.log(response);
+    });
+  }
+
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
   const buttonPressed = () => {
     navigation.navigate('HomeScreen');
   };
-  const buttonPressed2 = () => {
+  const bP2 = () => {
     navigation.navigate('EditEventScreen');
   };
 
   return (
     <View style={styles.root}>
-      <Modal animationType="slide" transparent={true} visible={open}>
-        <View style={styles.centerView}>
-          <View style={styles.modalView}>
-            <DatePicker
-              minimumDate={startDate}
-              mode={'datepicker'}
-              selected={'today'}
-              onDateChanged={handleChange}
-            />
-            <Pressable onPress={handleOnPress}>
-              <Text>Close</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+      <DatePicker
+        androidVariant="iosClone"
+        modal
+        mode="datetime"
+        open={open}
+        date={eventStartTime}
+        minimumDate={eventStartTime}
+        onConfirm={date => {
+          setOpen(false);
+          setEventStartTime(date);
+        }}
+        onCancel={() => {
+          setOpen(false);
+        }}
+      />
+
       <ScrollView>
         <View style={styles.headingContainer}>
           <Pressable onPress={buttonPressed}>
@@ -79,7 +135,9 @@ const AddEventScreen = () => {
               {' '}
               Upload your event banner here.
             </Text>
-            <Text style={styles.browseTxt}> Browse </Text>
+            <Pressable onPress={browseFunc}>
+              <Text style={styles.browseTxt}>Browse</Text>
+            </Pressable>
           </View>
         </View>
 
@@ -87,6 +145,8 @@ const AddEventScreen = () => {
           <Text style={styles.txtTitle}> Event Name </Text>
           <View style={styles.eOneLineInner}>
             <TextInput
+              onChangeText={setEventName}
+              value={eventName}
               editable
               style={styles.txtInput}
               maxLength={50}></TextInput>
@@ -99,6 +159,8 @@ const AddEventScreen = () => {
             <TextInput
               editable
               multiline
+              onChangeText={setEventDescription}
+              value={eventDescription}
               style={styles.descInput}
               maxLength={548}></TextInput>
           </View>
@@ -114,6 +176,7 @@ const AddEventScreen = () => {
           </Pressable>
           <View style={styles.eOneLineInner}>
             <TextInput
+              value={eventStartTime.toString()}
               editable
               style={styles.txtInput}
               maxLength={50}></TextInput>
@@ -130,6 +193,7 @@ const AddEventScreen = () => {
           </Pressable>
           <View style={styles.eOneLineInner}>
             <TextInput
+              value={eventEndTime.toString()}
               editable
               style={styles.txtInput}
               maxLength={50}></TextInput>
@@ -140,6 +204,8 @@ const AddEventScreen = () => {
           <Text style={styles.txtTitle}> Location </Text>
           <View style={styles.eOneLineInner}>
             <TextInput
+              onChangeText={setEventLocation}
+              value={eventLocation}
               editable
               style={styles.txtInput}
               maxLength={50}></TextInput>
@@ -147,14 +213,11 @@ const AddEventScreen = () => {
         </View>
 
         <View style={styles.buttonContainer}>
-          <Pressable onPress={buttonPressed2}>
-            <View style={styles.createButton}>
-              <Text editable style={styles.createTxt}>
-                {' '}
-                Create
-              </Text>
-            </View>
-          </Pressable>
+          <CustomButton
+            onPress={createButtonPressed}
+            type="Add"
+            text="Create"
+          />
         </View>
       </ScrollView>
     </View>

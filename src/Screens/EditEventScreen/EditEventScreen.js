@@ -6,7 +6,7 @@ import {
   TextInput,
   Modal,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
@@ -14,27 +14,39 @@ import {Pressable} from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Delete from 'react-native-vector-icons/AntDesign';
 import Calendar from 'react-native-vector-icons/AntDesign';
-import DatePicker from 'react-native-modern-datepicker';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import {getToday, getFormatedDate} from 'react-native-modern-datepicker';
-
+import DatePicker from 'react-native-date-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {DBContext} from '../../../App';
 const EditEventScreen = () => {
+  /* Date Components */
+
   const today = new Date();
-
-  const startDate = getFormatedDate(
-    today.setDate(today.getDate() + 1, 'YYYY/MM/DD'),
-  );
-
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState(false);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
 
   function handleOnPress() {
     setOpen(!open);
   }
-
   function handleChange(propDate) {
     setDate(propDate);
   }
+
+  /* Database Connection */
+  const db = useContext(DBContext);
+  const [currName, setCurrName] = useState(undefined);
+  const [currDescription, setCurrDescription] = useState(undefined);
+  const [currLocation, setCurrLocation] = useState(undefined);
+
+  // UseEffect
+
+  // You need dbContext
+  // Open db transaction (db.transaction)
+  // excecute sql that you want to get (tx)
+  // Choose Query
+  // Get Value
+  // Get Results
+  // Error check
 
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
@@ -44,22 +56,37 @@ const EditEventScreen = () => {
   };
   return (
     <View style={styles.root}>
-      <Modal animationType="slide" transparent={true} visible={open}>
+      {/* <Modal animationType="slide" transparent={true} visible={open}>
         <View style={styles.centerView}>
           <View style={styles.modalView}>
             <DatePicker
               minimumDate={startDate}
               mode={'datepicker'}
-              selected={date}
+              selected={'date'}
               onDateChanged={handleChange}
             />
-
             <Pressable onPress={handleOnPress}>
               <Text>Close</Text>
             </Pressable>
           </View>
         </View>
-      </Modal>
+      </Modal> */}
+
+      <DatePicker
+        androidVariant="iosClone"
+        modal
+        mode="datetime"
+        open={open}
+        date={startDate}
+        minimumDate={startDate}
+        onConfirm={date => {
+          setOpen(false);
+          setStartDate(startDate);
+        }}
+        onCancel={() => {
+          setOpen(false);
+        }}
+      />
 
       <ScrollView>
         <View style={styles.headingContainer}>
