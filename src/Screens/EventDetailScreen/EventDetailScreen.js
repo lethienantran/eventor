@@ -19,6 +19,7 @@ import eventsBanner from '../../../assets/images/eventsBanner.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AddTaskScreen from '../AddTaskScreen';
 import TaskFeed from '../../components/TaskFeed';
+import ViewModeButton from '../../components/ViewModeButton';
 
 const {height, width} = Dimensions.get('window');
 
@@ -148,7 +149,7 @@ const EventDetailScreen = () => {
             </View>
           </View>
           <View style={styles.viewModeContainer}>
-            <Pressable
+            {/* <Pressable
               style={[
                 viewMode === 'description'
                   ? styles.selectedButton
@@ -165,8 +166,10 @@ const EventDetailScreen = () => {
                 ]}>
                 Description
               </Text>
-            </Pressable>
-            <Pressable
+            </Pressable> */}
+            <ViewModeButton mode='description' viewMode={viewMode} title='Description' type='Description' onPress={onDescriptionPressed} />
+            <ViewModeButton mode='remainingTasks' viewMode={viewMode} title='Remaining Tasks' type='RemainingTasks' onPress={onRemainingTasksPressed} />
+            {/* <Pressable
               style={[
                 viewMode === 'remainingTasks'
                   ? styles.selectedButton
@@ -183,7 +186,7 @@ const EventDetailScreen = () => {
                 ]}>
                 Remaining Tasks
               </Text>
-            </Pressable>
+            </Pressable> */}
           </View>
 
           {viewMode === 'remainingTasks' ? (
