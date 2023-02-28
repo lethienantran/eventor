@@ -46,6 +46,7 @@ const LandingScreen = () => {
 
 const styles = ScaledSheet.create({
   root: {
+    backgroundColor:'white',
     width: '100%',
     height: '100%',
   },
