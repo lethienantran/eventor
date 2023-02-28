@@ -19,7 +19,7 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
 import Logo from '../../components/Logo';
 import CustomInputField from '../../components/CustomInputField';
-
+//Date Picker
 import StartEventTimePicker from '../../components/StartEventTimePicker';
 import EndEventTimePicker from '../../components/EndEventTimePicker';
 
@@ -44,43 +44,45 @@ const AddEventScreen = () => {
   const [image, setImage] = useState(null);
 
   /*Inputting data in DB*/
-
   const db = useContext(DBContext);
 
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
 
-
+  //when BackButton pressed
   const onBackPressed = () =>{
     navigation.goBack();
   };
 
+  //browse image
   const onBrowsePressed = () => {
     const options = {};
     //open the gallery
     launchImageLibrary(options, (response) => {
-      console.log('Image selected: ', response.assets[0].uri);
-    //set image to the uri
-    setImage(response.assets[0].uri);
+      if (response && response.assets) {
+        console.log('Image Selected:', response.assets[0].uri);
+        setImage(response.assets[0].uri);
+      }
     });
   };
 
-  const onCreatePressed = async(imagePath) => {
+  const onCreatePressed = async() => {
     try{
       //read the file at path - this case is image dir/path and encoded as base64.
-      const imageData = await RNFS.readFile(imagePath, 'base64');
+      const imageData = await RNFS.readFile(image, 'base64');
       db.transaction(tx => {
         tx.executeSql(
           //Insert all entered values.
           `INSERT INTO events 
-          (eventName, eventStartTime, eventEndTime, eventCaption, eventProgress, eventImage location) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          (eventName, eventStartTime, eventEndTime, eventCaption, eventImage, eventProgress, location) 
+          VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [
             eventName,
             eventStartTime.toString(),
             eventEndTime.toString(),
             eventDescription,
-            0,
             imageData,
+            0,
             eventLocation,
           ],
           (tx, results) => {
@@ -97,7 +99,16 @@ const AddEventScreen = () => {
       console.log("error reading image file: ", error);
     }
   };
+    useEffect(()=>{
 
+        console.log("eventName: " + eventName);
+        console.log("eventDescription: " + eventDescription); 
+        console.log("eventStartTime: " + eventStartTime);
+        console.log("eventEndTime: " + eventEndTime);
+        console.log("eventImage: " + image);
+        console.log("eventLocation: " + eventLocation);
+
+    });
   useEffect(()=>{
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardStatus(true);
@@ -149,6 +160,7 @@ const AddEventScreen = () => {
          </View>
         </View>
       </View>
+
     </View>
   );
 };
@@ -202,12 +214,10 @@ const styles = ScaledSheet.create({
   },
   eventInfoScrollView:{
     width:'100%',
-    // backgroundColor:'pink',
   },
   buttonContainer: {
     width: '100%',
     height: '20%',
-    // backgroundColor:'green',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
