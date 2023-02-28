@@ -12,17 +12,19 @@ const CustomInputField = ({
   selectTextOnFocus,
   isButton = false,
   onPress,
+  type ='inputField'
 }) => {
   return (
-    <View style={styles.root}>
+    <View style={styles[type + 'Root']}>
       <Text style={styles.fieldTitle}>{title}</Text>
       {!isButton ? 
       (<TextInput
         placeholder=""
         onChangeText={setValue}
         value={value}
-        style={styles.inputField}
-        numberOfLines={1}
+        style={styles[type]}
+        // numberOfLines={1}
+        multiline={type === 'inputField' ? false : true}
         secureTextEntry={secureTextEntry}
         editable={editable}
         selectTextOnFocus={selectTextOnFocus}
@@ -37,10 +39,15 @@ const CustomInputField = ({
 };
 
 const styles = ScaledSheet.create({
-  root: {
+  inputFieldRoot: {
     marginVertical: '1%',
     width: '100%',
     height: '70@vs',
+  },
+  descriptionFieldRoot: {
+    marginVertical: '1%',
+    width: '100%',
+    height: '190@vs',
   },
   fieldTitle: {
     marginVertical: '2%',
@@ -51,9 +58,17 @@ const styles = ScaledSheet.create({
   inputField: {
     borderRadius: '20@ms',
     backgroundColor: '#EEEEEE',
-    height: '60%',
+    height: '62%',
     paddingHorizontal: '5%',
     fontSize: RFPercentage(2.25),
+  },
+  descriptionField: {
+    borderRadius: '20@ms',
+    backgroundColor: '#EEEEEE',
+    height: '84%',
+    paddingHorizontal: '5%',
+    fontSize: RFPercentage(2.25),
+    textAlignVertical: 'top'
   },
   buttonContainer: {
     borderRadius: '20@ms',
@@ -66,6 +81,13 @@ const styles = ScaledSheet.create({
   buttonText: {
     fontFamily: 'OpenSans-Regular',
     color: 'black',
+    fontSize: RFPercentage(2.25),
+  },
+  inputField: {
+    borderRadius: '20@ms',
+    backgroundColor: '#EEEEEE',
+    height: '62%',
+    paddingHorizontal: '5%',
     fontSize: RFPercentage(2.25),
   },
 });
