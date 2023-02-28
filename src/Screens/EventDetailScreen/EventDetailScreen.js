@@ -149,44 +149,18 @@ const EventDetailScreen = () => {
             </View>
           </View>
           <View style={styles.viewModeContainer}>
-            {/* <Pressable
-              style={[
-                viewMode === 'description'
-                  ? styles.selectedButton
-                  : styles.unselectedButton,
-                styles.descriptionButton,
-              ]}
-              onPress={onDescriptionPressed}>
-              <Text
-                style={[
-                  viewMode === 'description'
-                    ? styles.selectedText
-                    : styles.unselectedText,
-                  styles.viewModeText,
-                ]}>
-                Description
-              </Text>
-            </Pressable> */}
-            <ViewModeButton mode='description' viewMode={viewMode} title='Description' type='Description' onPress={onDescriptionPressed} />
-            <ViewModeButton mode='remainingTasks' viewMode={viewMode} title='Remaining Tasks' type='RemainingTasks' onPress={onRemainingTasksPressed} />
-            {/* <Pressable
-              style={[
-                viewMode === 'remainingTasks'
-                  ? styles.selectedButton
-                  : styles.unselectedButton,
-                styles.remainingTasksButton,
-              ]}
-              onPress={onRemainingTasksPressed}>
-              <Text
-                style={[
-                  viewMode === 'remainingTasks'
-                    ? styles.selectedText
-                    : styles.unselectedText,
-                  styles.viewModeText,
-                ]}>
-                Remaining Tasks
-              </Text>
-            </Pressable> */}
+            <ViewModeButton 
+              mode='description' 
+              viewMode={viewMode} 
+              title='Description' 
+              type='Description' 
+              onPress={onDescriptionPressed} />
+            <ViewModeButton 
+              mode='remainingTasks' 
+              viewMode={viewMode} 
+              title='Remaining Tasks' 
+              type='RemainingTasks' 
+              onPress={onRemainingTasksPressed} />
           </View>
 
           {viewMode === 'remainingTasks' ? (
@@ -311,38 +285,6 @@ const styles = ScaledSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  descriptionButton: {
-    width: '42%',
-    height: '78%',
-    borderRadius: '20@ms',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  remainingTasksButton: {
-    width: '52%',
-    height: '78%',
-    borderRadius: '20@ms',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  viewModeText: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: RFPercentage(2.25),
-  },
-  selectedText: {
-    color: 'white',
-  },
-  unselectedText: {
-    color: 'black',
-  },
-  selectedButton: {
-    backgroundColor: '#FF3008',
-  },
-  unselectedButton: {
-    backgroundColor: '#FFF',
-    borderWidth: '2@ms',
-    borderColor: 'black',
   },
   aboutContainer: {
     flexDirection: 'column',
