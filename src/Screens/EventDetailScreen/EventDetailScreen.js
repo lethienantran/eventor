@@ -39,7 +39,7 @@ const EventDetailScreen = () => {
   const [progression, setProgression] = useState('');
   const [description, setDescription] = useState('');
   const [viewMode, setViewMode] = useState('description');
-
+  const [eventImage, setEventImage] = useState();
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
 
@@ -70,6 +70,7 @@ const EventDetailScreen = () => {
           setLocation(results.rows.item(0).location);
           setProgression(results.rows.item(0).eventProgress);
           setDescription(results.rows.item(0).eventCaption);
+          setEventImage(results.rows.item(0).eventImage);
         },
       );
     });
@@ -121,7 +122,7 @@ const EventDetailScreen = () => {
         <View style={styles.contentContainer}>
           <View style={styles.eventBannerContainer}>
             <ImageBackground
-              source={eventsBanner}
+              source={{uri: `data:image/jpeg;base64,${eventImage}`}}
               resizeMode="cover"
               style={{flex: 1}}
               imageStyle={styles.itemImage}></ImageBackground>
