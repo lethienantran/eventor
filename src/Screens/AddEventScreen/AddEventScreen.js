@@ -30,7 +30,8 @@ import {CALLBACK_TYPE} from 'react-native-gesture-handler/lib/typescript/handler
 
 const AddEventScreen = () => {
   const today = new Date();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // Start Date
+  const [open1, setOpen1] = useState(false); // End Date
 
   /* Storing User Data entries */
   const [eventName, setEventName] = useState('');
@@ -40,14 +41,14 @@ const AddEventScreen = () => {
   const [eventEndTime, setEventEndTime] = useState(new Date());
 
   /* Setting Img UseState */
-  const [image, setImage] = useState();
+  const [image, setImage] = useState(null);
 
   /*Inputting data in DB*/
 
   const db = useContext(DBContext);
   const createButtonPressed = async imagePath => {
     try {
-      const imageData = await RNFS.readFile(imagePath, 'base64');
+      const imageData = await RNFS.readFile(image, 'base64');
       db.transaction(tx => {
         tx.executeSql(
           `INSERT INTO events 
@@ -75,9 +76,15 @@ const AddEventScreen = () => {
     }
   };
 
+  // Start Date
   function handleOnPress() {
     setOpen(!open);
   }
+  // End Date
+  function handleOnPress2() {
+    setOpen1(!open1);
+  }
+
   function handleChange(propDate) {
     setDate(propDate);
   }
@@ -115,6 +122,23 @@ const AddEventScreen = () => {
         }}
         onCancel={() => {
           setOpen(false);
+        }}
+      />
+
+      <DatePicker
+        // Date Picker for the End time
+        androidVariant="iosClone"
+        modal
+        mode="datetime"
+        open={open1}
+        date={eventEndTime}
+        minimumDate={eventStartTime}
+        onConfirm={date => {
+          setOpen1(false);
+          setEventEndTime(date);
+        }}
+        onCancel={() => {
+          setOpen1(false);
         }}
       />
 
@@ -185,7 +209,7 @@ const AddEventScreen = () => {
 
         <View style={styles.eventOneLineContainer}>
           <Text style={styles.txtTitle}> End Date/Time </Text>
-          <Pressable onPress={handleOnPress}>
+          <Pressable onPress={handleOnPress2}>
             <Calendar
               name="calendar"
               style={styles.calendarButton}
