@@ -99,14 +99,14 @@ const AddEventScreen = () => {
       console.log("error reading image file: ", error);
     }
   };
-    useEffect(()=>{
+  useEffect(()=>{
 
-        console.log("eventName: " + eventName);
-        console.log("eventDescription: " + eventDescription); 
-        console.log("eventStartTime: " + eventStartTime);
-        console.log("eventEndTime: " + eventEndTime);
-        console.log("eventImage: " + image);
-        console.log("eventLocation: " + eventLocation);
+    console.log("eventName: " + eventName);
+    console.log("eventDescription: " + eventDescription); 
+    console.log("eventStartTime: " + eventStartTime);
+    console.log("eventEndTime: " + eventEndTime);
+    console.log("eventImage: " + image);
+    console.log("eventLocation: " + eventLocation);
 
     });
   useEffect(()=>{
