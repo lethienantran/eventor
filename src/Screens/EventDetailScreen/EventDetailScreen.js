@@ -97,6 +97,10 @@ const EventDetailScreen = () => {
     }
   };
 
+  const onEditPress = () => {
+    console.log('navigate to edit event');
+  }
+
   const onAddTaskPressed = () => {
     //navigate to add task screen
     navigation.navigate('AddTaskScreen');
@@ -118,6 +122,7 @@ const EventDetailScreen = () => {
           title="eventor"
           hasBack="true"
           hasEdit="true"
+          onEditPress={onEditPress}
         />
         <View style={styles.contentContainer}>
           <View style={styles.eventBannerContainer}>
@@ -307,7 +312,7 @@ const styles = ScaledSheet.create({
   bodyText: {
     fontFamily: 'Inter-Regular',
     color: '#ABABAB',
-    fontSize: RFPercentage(2.4),
+    fontSize: RFPercentage(2.25),
   },
   actionBar: {
     width: '100%',

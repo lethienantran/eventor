@@ -3,12 +3,12 @@ import React from 'react';
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import Feather from 'react-native-vector-icons/Feather';
 import { ScaledSheet } from 'react-native-size-matters';
-const Logo = ({onPress, title ='eventor', hasBack = false, hasEdit = false}) => {
+const Logo = ({onPress, title ='eventor', hasBack = false, hasEdit = false, onEditPress}) => {
   return (
     <View style={styles.root}>
       {hasBack ? (<Feather name='chevron-left' style={styles.backIcon} onPress={onPress}/>) : null}
       <Text style={styles.title}>{title}</Text>
-      {hasEdit ? (<Feather name='edit' style={styles.editIcon}/>) : null}
+      {hasEdit ? (<Feather name='edit' style={styles.editIcon} onPress={onEditPress}/>) : null}
     </View>
   );
 };
