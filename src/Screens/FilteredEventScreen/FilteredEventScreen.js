@@ -1,5 +1,5 @@
-import {View, Text, Pressable, FlatList} from 'react-native';
-import React, { useState } from 'react';
+import {View, Text, Pressable, FlatList, ImageBackground} from 'react-native';
+import React, { useEffect, useState, useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import { ScaledSheet } from 'react-native-size-matters';
 import Logo from '../../components/Logo';
@@ -7,8 +7,13 @@ import ViewModeButton from '../../components/ViewModeButton';
 import { RFPercentage } from 'react-native-responsive-fontsize';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import {DBContext} from '../../../App';
+import moment from 'moment';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const eventsData = [
+
+const eventsData= [
   {id: '1', name: 'Brain Injury Art Show', progress: 67, date: '2/26/2023 8:00'},
   {id: '2', name: 'Seattle Asian American...', progress: 23, date: '03/01/2023 18:00'},
   {id: '3', name: 'Dave Holland Trio', progress: 100, date: '02/05/2023 20:00'},
@@ -19,15 +24,8 @@ const eventsData = [
   const FilteredEventScreen = () => {
     const navigation = useNavigation();
     const [viewMode, setViewMode] = useState('All');
-    const [events, setEvents] = useState(eventsData);
+    const [events, setevents] = useState(eventsData);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.item}>
-      <Text style={styles.itemName}>{item.name}</Text>
-      <Text style={styles.itemProgress}>Progress: {item.progress}%</Text>
-      <Text style={styles.itemDate}>{item.date}</Text>
-    </View>
-  );
 
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
@@ -48,8 +46,7 @@ const eventsData = [
         return events;
     }
   };
-  
-  
+
 
   const onAllPressed = () => {
     setViewMode('All');
@@ -69,10 +66,53 @@ const eventsData = [
   };
 
   const addButtonPressed = () => {
-    navigation.navigate('addEventScreen');
+    navigation.navigate('AddEventScreen');
+    
+  };
+  const onEventPressed = async selectedEventID => {
+    AsyncStorage.setItem('selectedEventID', selectedEventID.toString())
+      .then(() => {
+        console.log('SelectedEventID: ' + selectedEventID.toString());
+        navigation.navigate('EventDetailScreen');
+      })
+      .catch(error => {
+        console.error(
+          'Error',
+          'Could not save SelectedEventID to AsyncStorage!',
+        );
+        console.error(error);
+      });
   };
   
 
+  const renderItem = ({ item }) => {
+    const eventStartTime = moment(item.date, 'MM/DD/YYYY HH:mm').format('MM/DD/YYYY');
+    const eventEndTime = moment(item.date, 'MM/DD/YYYY HH:mm').add(1, 'day').format('MM/DD/YYYY');
+    
+    return (
+      <TouchableOpacity
+        key={item.id}
+        style={styles.feedItem}
+        activeOpacity={0.7}
+        onPress={() => onEventPressed(item.id)}>
+        <View style={styles.dateTimeContainer}>
+          <Text style={styles.dateTimeText}>
+            {eventStartTime} - {eventEndTime}
+          </Text>
+        </View>
+        <View style={styles.titleItemContainer}>
+          <Text style={styles.titleItemText}>{item.name}</Text>
+        </View>
+        <View style={styles.progressionItemContainer}>
+          <Text style={styles.progressionItemText}>Progress:</Text>
+          <Text style={styles.displayProgressionItemText}>
+            {item.progress}%
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  
   return (
       <View style={styles.root}>
         <View style={styles.container}>
@@ -89,21 +129,21 @@ const eventsData = [
             <View style={styles.viewTitleContainer}>
               <Text style={styles.viewTitleText}>{viewMode} Events</Text>
             </View>
-            <View style={styles.feedContainer} />
             <FlatList
-              data={filteredEvents()}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id}
-              ListEmptyComponent={renderEmptyComponent}
+             data={filteredEvents()}
+             renderItem={renderItem}
+             keyExtractor={(item) => item.id}
+             ListEmptyComponent={renderEmptyComponent}
+             showsVerticalScrollIndicator={false}
             />
           </View>
         </View>
-        <View style = {styles.addButtonContainer}>
+        <View style = {styles.addButtonIcon}>
         <Pressable onPress={addButtonPressed}>
         <MaterialCommunityIcons
           name="plus-circle"
-          style={styles.addButtonIcon}
           color={'#FF3008'}
+          size = {100}
         />
       </Pressable>
         </View>
@@ -125,27 +165,23 @@ const styles = ScaledSheet.create({
     flexDirection: 'column',
     width: '85%',
     height: '100%',
-    // backgroundColor:'green',
   },
   contentContainer: {
     flexDirection: 'column',
     width: '100%',
     height: '91%',
-    // backgroundColor:'yellow',
   },
   viewModeContainer: {
     width: '100%',
     height: '11%',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    // backgroundColor:'pink',
   },
   viewTitleContainer:{
     width:'100%',
     height:'7%',
     flexDirection: 'column',
     justifyContent: 'center',
-    // backgroundColor:'grey',
 
   },
   viewTitleText:{
@@ -154,15 +190,72 @@ const styles = ScaledSheet.create({
     color:'black',
   },
   addButtonIcon: {
-    fontSize: RFPercentage(15),
+    fontSize: RFPercentage(13.5),
     marginRight: '5@ms',
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    backgroundColor: 'white',
+    bottom: '7@vs',
+    borderRadius: '70@ms',
+    borderColor: 1,
+    borderWidth: 1,
+    right: '20@ms',
   },
   feedContainer: {
     width: '100%',
     height: '40%',
+  },
+  feedItem: {
+    alignSelf: 'center',
+    marginVertical: '15@vs',
+    width: '100%',
+    height: '95@vs',
+    backgroundColor: '#777B7E',
+    borderRadius: '25@ms',
+  },
+  itemImage: {
+    borderRadius: '25@ms',
+    opacity: 0.4,
+  },
+  dateTimeContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    height: '22%',
+    justifyContent: 'flex-end',
+  },
+  dateTimeText: {
+    marginRight: '20@ms',
+    marginTop: '5@vs',
+    color: 'white',
+    fontFamily: 'Inter-Regular',
+    fontSize: RFPercentage(2),
+  },
+  titleItemContainer: {
+    width: '100%',
+    height: '42%',
+    justifyContent: 'flex-end',
+  },
+  titleItemText: {
+    marginLeft: '20@ms',
+    fontFamily: 'Inter-SemiBold',
+    color: 'white',
+    fontSize: RFPercentage(2.2),
+  },
+  progressionItemContainer: {
+    width: '100%',
+    height: '56%',
+    flexDirection: 'row',
+  },
+  progressionItemText: {
+    marginLeft: '20@ms',
+    fontFamily: 'Inter-Regular',
+    color: 'white',
+    fontSize: RFPercentage(1.8),
+  },
+  displayProgressionItemText: {
+    marginLeft: '2@ms',
+    fontFamily: 'Inter-Regular',
+    color: 'white',
+    fontSize: RFPercentage(1.8),
   },
   
 });
