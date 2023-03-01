@@ -38,6 +38,8 @@ const EventDetailScreen = () => {
   const [location, setLocation] = useState('');
   const [progression, setProgression] = useState('');
   const [description, setDescription] = useState('');
+  const [eventStartTime, setEventStartTime] = useState('');
+  const [eventEndTime, setEventEndTime] = useState('');
   const [viewMode, setViewMode] = useState('description');
   const [eventImage, setEventImage] = useState();
   //call useNavigation to be able to navigate around
@@ -71,6 +73,8 @@ const EventDetailScreen = () => {
           setProgression(results.rows.item(0).eventProgress);
           setDescription(results.rows.item(0).eventCaption);
           setEventImage(results.rows.item(0).eventImage);
+          setEventStartTime(results.rows.item(0).eventStartTime);
+          setEventEndTime(results.rows.item(0).eventEndTime);
         },
       );
     });
@@ -97,8 +101,9 @@ const EventDetailScreen = () => {
     }
   };
 
-  const onEditPress = () => {
-    console.log('navigate to edit event');
+  const onEditPress = (selectedEventID, selectedEventImage, selectedEventName, selectedEventDescription, selectedEventStartTime, selectedEventEndTime, selectedEventLocation) => {
+    navigation.navigate('EditEventScreen', 
+    {eventID: selectedEventID, eventImage: selectedEventImage, eventName: selectedEventName, eventDescription: selectedEventDescription, eventStartTime: selectedEventStartTime, eventEndTime: selectedEventEndTime, eventLocation: selectedEventLocation});
   }
 
   const onAddTaskPressed = () => {
@@ -122,7 +127,7 @@ const EventDetailScreen = () => {
           title="eventor"
           hasBack="true"
           hasEdit="true"
-          onEditPress={onEditPress}
+          onEditPress={()=>{onEditPress(currentSelectedEventID,eventImage, eventName, description, eventStartTime, eventEndTime, location)}}
         />
         <View style={styles.contentContainer}>
           <View style={styles.eventBannerContainer}>
