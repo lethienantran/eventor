@@ -150,7 +150,7 @@ const HomeScreen = () => {
         activeOpacity={0.7}
         onPress={() => onEventPressed(item.eventID)}>
         <ImageBackground
-          source={{uri: `data:image/jpeg;base64,${item.eventImage}`}}
+          source={item.eventImage !== null ? {uri: `data:image/jpeg;base64,${item.eventImage}`} : (require('../../../assets/images/eventsBanner.png'))}
           resizeMode="cover"
           style={{flex: 1}}
           imageStyle={styles.itemImage}
