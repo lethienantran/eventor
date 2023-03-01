@@ -291,13 +291,14 @@ const styles = ScaledSheet.create({
     flexDirection: 'column',
     justifyContent: 'flex-start',
     width: '100%',
-    height: '50%',
+    height: '26%',
+    // backgroundColor:'green'
   },
   headerText: {
     marginVertical: '4%',
     fontFamily: 'OpenSans-SemiBold',
     color: 'black',
-    fontSize: RFPercentage(2.9),
+    fontSize: RFPercentage(3.5),
   },
   bodyContainer: {
     width: '100%',
@@ -306,7 +307,7 @@ const styles = ScaledSheet.create({
   bodyText: {
     fontFamily: 'Inter-Regular',
     color: '#ABABAB',
-    fontSize: RFPercentage(2.2),
+    fontSize: RFPercentage(2.4),
   },
   actionBar: {
     width: '100%',

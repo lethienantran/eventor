@@ -12,6 +12,7 @@ const CustomInputField = ({
   selectTextOnFocus,
   isButton = false,
   onPress,
+  maxLength = 30,
   type ='inputField'
 }) => {
   return (
@@ -19,6 +20,7 @@ const CustomInputField = ({
       <Text style={styles.fieldTitle}>{title}</Text>
       {!isButton ? 
       (<TextInput
+        maxLength={maxLength}
         placeholder=""
         onChangeText={setValue}
         value={value}

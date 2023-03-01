@@ -111,7 +111,7 @@ const styles = ScaledSheet.create({
   },
   taskName: {
     marginLeft: '4%',
-    fontSize: RFPercentage(2.25),
+    fontSize: RFPercentage(2.1),
     fontFamily: 'Inter-Regular',
     color: 'black',
   },

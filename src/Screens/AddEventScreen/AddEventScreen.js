@@ -3,7 +3,8 @@ import {
   Text,
   Pressable,
   ScrollView,
-  Keyboard
+  Keyboard,
+  Modal,
 } from 'react-native';
 import React, {useState, useContext, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
@@ -25,6 +26,9 @@ import EndEventTimePicker from '../../components/EndEventTimePicker';
 
 const AddEventScreen = () => {
   const [keyBoardStatus, setKeyboardStatus] = useState(false);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
   /* Storing User Data entries */
   const [eventName, setEventName] = useState('');
@@ -68,6 +72,16 @@ const AddEventScreen = () => {
 
   const onCreatePressed = async() => {
     try{
+      if(!eventName){
+        setModalVisible(true);
+        setModalMessage('Please enter an event name. It can be no longer than 30 characters.');
+        return false;
+      }
+      else if(!eventLocation){
+        setModalVisible(true);
+        setModalMessage('Please enter a location for your event. It can be no longer than 30 characters.');
+        return false;
+      }
       //read the file at path - this case is image dir/path and encoded as base64.
       const imageData = await RNFS.readFile(image, 'base64');
       db.transaction(tx => {
@@ -101,12 +115,12 @@ const AddEventScreen = () => {
   };
   useEffect(()=>{
 
-    console.log("eventName: " + eventName);
-    console.log("eventDescription: " + eventDescription); 
-    console.log("eventStartTime: " + eventStartTime);
-    console.log("eventEndTime: " + eventEndTime);
-    console.log("eventImage: " + image);
-    console.log("eventLocation: " + eventLocation);
+    // console.log("eventName: " + eventName);
+    // console.log("eventDescription: " + eventDescription); 
+    // console.log("eventStartTime: " + eventStartTime);
+    // console.log("eventEndTime: " + eventEndTime);
+    // console.log("eventImage: " + image);
+    // console.log("eventLocation: " + eventLocation);
 
     });
   useEffect(()=>{
@@ -125,6 +139,21 @@ const AddEventScreen = () => {
   return (
     <View style={styles.root}>
       <View style={styles.container}>
+        <Modal 
+          animationType='slide'
+          transparent={true}
+          visible={modalVisible}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalMessageText}>{modalMessage}</Text>
+              <Pressable onPress={()=>setModalVisible(false)}>
+                <Text style={styles.modalCloseText}>Close</Text>
+              </Pressable>
+            </View>
+          </View>
+
+        </Modal>
         <Logo hasBack={true} title='Create Event' onPress={onBackPressed}/>
         <View style={styles.contentContainer}>
           <View style={styles.uploadBannerContainer}>
@@ -135,8 +164,8 @@ const AddEventScreen = () => {
           </View>
           <View style={styles.eventInfoContainer}>
             <ScrollView style={styles.eventInfoScrollView}>
-              <CustomInputField value={eventName} setValue={setEventName} title='Event Name' editable={true} selectTextOnFocus={true} />
-              <CustomInputField value={eventDescription} setValue={setEventDescription} title='Description' editable={true} selectTextOnFocus={true} type='descriptionField'/>
+              <CustomInputField value={eventName} setValue={setEventName} title={'Event Name (' + (!eventName ? 0 : eventName.length) + '/30)'} editable={true} selectTextOnFocus={true} />
+              <CustomInputField value={eventDescription} setValue={setEventDescription} title={'Description (' + (!eventDescription ? 0 : eventDescription.length) + '/300)'} maxLength = {300} editable={true} selectTextOnFocus={true} type='descriptionField'/>
               <StartEventTimePicker 
                 minDate={currentDate} 
                 maxDate={maxDate} 
@@ -151,7 +180,7 @@ const AddEventScreen = () => {
                 setEndDateText={setEndDateText}
                 setEndTime={setEventEndTime}
                 title={'End Date/Time'}/>
-              <CustomInputField value={eventLocation} setValue={setEventLocation} title='Location' editable={true} selectTextOnFocus={true} />
+              <CustomInputField value={eventLocation} setValue={setEventLocation} title={'Location (' + (!eventLocation ? 0 : eventLocation.length) + '/30)'} editable={true} selectTextOnFocus={true} />
               <View style={keyBoardStatus ? (styles.bumpLastItemActive) : (styles.bumpLastItemInactive)}/> 
             </ScrollView>
           </View>
@@ -227,6 +256,36 @@ const styles = ScaledSheet.create({
   },
   bumpLastItemInactive:{
     height:'10@vs',
+  },
+  modalContainer:{
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor:'rgba(0, 0, 0, 0.5)'
+  },
+  modalView:{
+    flexDirection:'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width:'92%',
+    height:'18%',
+    borderRadius:'10@ms',
+    backgroundColor:'white',
+  },
+  modalMessageText:{
+    textAlign:'center',
+    paddingHorizontal:'4%',
+    fontFamily:'Inter-Regular',
+    fontSize:RFPercentage(2.25),
+    color:'black',
+    marginVertical:'2%',
+  },
+  modalCloseText:{
+    textAlign:'center',
+    fontFamily:'Inter-Regular',
+    fontSize:RFPercentage(2),
+    color:'#FF3008',
+    marginVertical:'2%',
   },
 });
 

@@ -89,7 +89,7 @@ const EditTaskScreen = ({route}) => {
             <CustomInputField
               value={taskName}
               setValue={setTaskName}
-              title={'Task Name'}
+              title={'Task Name (' + (!taskName ? 0 : taskName.length) + '/30)'}
               editable={true}
               selectTextOnFocus={true}
             />
