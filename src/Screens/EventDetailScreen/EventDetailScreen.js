@@ -122,7 +122,7 @@ const EventDetailScreen = () => {
         <View style={styles.contentContainer}>
           <View style={styles.eventBannerContainer}>
             <ImageBackground
-              source={{uri: `data:image/jpeg;base64,${eventImage}`}}
+              source={eventImage !== null ? {uri: `data:image/jpeg;base64,${eventImage}`} : (require('../../../assets/images/eventsBanner.png'))}
               resizeMode="cover"
               style={{flex: 1}}
               imageStyle={styles.itemImage}></ImageBackground>
