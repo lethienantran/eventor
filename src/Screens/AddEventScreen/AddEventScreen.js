@@ -83,7 +83,7 @@ const AddEventScreen = () => {
         return false;
       }
       //read the file at path - this case is image dir/path and encoded as base64.
-      const imageData = await RNFS.readFile(image, 'base64');
+      const imageData = (image !== null ? (await RNFS.readFile(image, 'base64')) : (null));
       db.transaction(tx => {
         tx.executeSql(
           //Insert all entered values.
@@ -165,7 +165,7 @@ const AddEventScreen = () => {
           <View style={styles.eventInfoContainer}>
             <ScrollView style={styles.eventInfoScrollView}>
               <CustomInputField value={eventName} setValue={setEventName} title={'Event Name (' + (!eventName ? 0 : eventName.length) + '/30)'} editable={true} selectTextOnFocus={true} />
-              <CustomInputField value={eventDescription} setValue={setEventDescription} title={'Description (' + (!eventDescription ? 0 : eventDescription.length) + '/300)'} maxLength = {300} editable={true} selectTextOnFocus={true} type='descriptionField'/>
+              <CustomInputField value={eventDescription} setValue={setEventDescription} title={'Description (' + (!eventDescription ? 0 : eventDescription.length) + '/120)'} maxLength = {120} editable={true} selectTextOnFocus={true} type='descriptionField'/>
               <StartEventTimePicker 
                 minDate={currentDate} 
                 maxDate={maxDate} 

@@ -55,7 +55,7 @@ const AddTaskScreen = () => {
 
   const [eventName, setEventName] = useState('');
   const [taskName, setTaskName] = useState('');
-  const [taskStatus, setTaskStatus] = useState('Incomplete');
+  const [taskStatus, setTaskStatus] = useState('In-Progress');
 
   const onBackPressed = () => {
     navigation.goBack();
@@ -65,7 +65,7 @@ const AddTaskScreen = () => {
     db.transaction(tx => {
       tx.executeSql(
         'INSERT INTO tasks (taskName, taskStatus, eventID) VALUES (?, ?, ?)',
-        [taskName, 'incomplete', currentSelectedEventID],
+        [taskName, 'ip', currentSelectedEventID],
         (tx, results) => {
           console.log('Task \"' + taskName + '\" successfully added to ' + eventName + '\'s id:' + currentSelectedEventID);
           navigation.goBack();   

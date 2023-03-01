@@ -25,7 +25,7 @@ const EditTaskScreen = ({route}) => {
   };
 
   const onTaskStatusPressed = () =>{
-    setTaskStatus(taskStatus==='incomplete' ? 'done' : 'incomplete');
+    setTaskStatus(taskStatus==='ip' ? 'cp' : 'ip');
   };
 
   const onUpdatePressed = () => {
@@ -65,7 +65,7 @@ const EditTaskScreen = ({route}) => {
         <Logo onPress={onBackPressed} title="Edit Task" hasBack="true" />
         <View style={styles.contentContainer}>
           <View style={styles.statusBarContainer}>
-            {taskStatus !== 'done' ? (
+            {taskStatus !== 'cp' ? (
                 <Octicons
                   name="pulse"
                   style={[styles.taskStatusIcon, styles.inProgressIcon]}
@@ -76,7 +76,7 @@ const EditTaskScreen = ({route}) => {
                   style={[styles.taskStatusIcon, styles.doneIcon]}
                 />
               )}
-            <Text style={styles.questionText}>{taskStatus}</Text>
+            <Text style={styles.questionText}>{taskStatus === 'ip' ? 'In-Progress' : 'Complete'}</Text>
           </View>
           <View style={styles.taskInfoContainer}>
             <CustomInputField
@@ -94,7 +94,7 @@ const EditTaskScreen = ({route}) => {
               selectTextOnFocus={true}
             />
             <CustomInputField
-              value={taskStatus}
+              value={taskStatus === 'ip' ? 'In-Progress' : 'Complete'}
               setValue={setTaskStatus}
               title={'Task Status'}
               editable={false}

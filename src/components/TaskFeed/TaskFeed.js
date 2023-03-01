@@ -36,7 +36,7 @@ const TaskFeed = (props) => {
     return (
       <View key={item.taskID} style={styles.taskContainer}>
         <View style={styles.taskInfoContainter}>
-          {item.taskStatus === 'incomplete' ? (
+          {item.taskStatus === 'ip' ? (
             <Octicons
               name="pulse"
               style={[styles.taskStatusIcon, styles.taskIncomplete]}
