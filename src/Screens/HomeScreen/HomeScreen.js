@@ -262,6 +262,8 @@ const styles = ScaledSheet.create({
     width: '99%',
     height: '91%',
   },
+  
+  
   addButtonIcon: {
     fontSize: RFPercentage(13.5),
     marginRight: '5@ms',
