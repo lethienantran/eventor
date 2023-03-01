@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import React, {useContext, useState, useEffect} from 'react';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -59,7 +59,7 @@ const EventDetailScreen = () => {
     }
   };
 
-  useEffect(() => {
+  useFocusEffect(() => {
     setSelectedEventID().then(setCurrentSelectedEventID);
     db.transaction(tx => {
       tx.executeSql(
@@ -74,7 +74,7 @@ const EventDetailScreen = () => {
         },
       );
     });
-  }, [currentSelectedEventID]);
+  });
 
   const onBackPressed = async () => {
     try {
@@ -97,10 +97,6 @@ const EventDetailScreen = () => {
     }
   };
 
-  const onEditPress = () => {
-    console.log('navigate to edit event');
-  }
-
   const onAddTaskPressed = () => {
     //navigate to add task screen
     navigation.navigate('AddTaskScreen');
@@ -122,12 +118,11 @@ const EventDetailScreen = () => {
           title="eventor"
           hasBack="true"
           hasEdit="true"
-          onEditPress={onEditPress}
         />
         <View style={styles.contentContainer}>
           <View style={styles.eventBannerContainer}>
             <ImageBackground
-              source={eventImage !== null ? {uri: `data:image/jpeg;base64,${eventImage}`} : (require('../../../assets/images/eventsBanner.png'))}
+              source={{uri: `data:image/jpeg;base64,${eventImage}`}}
               resizeMode="cover"
               style={{flex: 1}}
               imageStyle={styles.itemImage}></ImageBackground>
@@ -296,14 +291,13 @@ const styles = ScaledSheet.create({
     flexDirection: 'column',
     justifyContent: 'flex-start',
     width: '100%',
-    height: '26%',
-    // backgroundColor:'green'
+    height: '50%',
   },
   headerText: {
     marginVertical: '4%',
     fontFamily: 'OpenSans-SemiBold',
     color: 'black',
-    fontSize: RFPercentage(3.5),
+    fontSize: RFPercentage(2.9),
   },
   bodyContainer: {
     width: '100%',
@@ -312,7 +306,7 @@ const styles = ScaledSheet.create({
   bodyText: {
     fontFamily: 'Inter-Regular',
     color: '#ABABAB',
-    fontSize: RFPercentage(2.25),
+    fontSize: RFPercentage(2.2),
   },
   actionBar: {
     width: '100%',

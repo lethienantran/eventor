@@ -68,12 +68,28 @@ const AddTaskScreen = () => {
         [taskName, 'ip', currentSelectedEventID],
         (tx, results) => {
           console.log('Task \"' + taskName + '\" successfully added to ' + eventName + '\'s id:' + currentSelectedEventID);
-          navigation.goBack();   
         },
         error => {
           console.log("Error adding task to database: ", error);
         }
       );
+      tx.executeSql(
+        `UPDATE events 
+        SET eventProgress = Round((
+          SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
+          FROM tasks 
+          WHERE eventID = ? AND taskStatus = 'cp'
+        ))
+        WHERE eventID = ?;`,
+        [currentSelectedEventID,currentSelectedEventID, currentSelectedEventID],
+        (tx, results) => {
+          console.log("Update Successfully");
+          navigation.goBack();   
+        },
+        error => {
+          console.log("can't update, error: " + error);
+        }
+      )
     });
   };
   return (

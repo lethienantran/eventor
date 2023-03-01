@@ -30,29 +30,28 @@ export const DBContext = createContext({});
 
 const App = () => {
   //update eventProgress every time, eventProgress = all done task of the same eventID / all task of the same eventID
-  useEffect(() => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `
-        UPDATE events
-        SET eventProgress =ROUND( (
-            SELECT CAST(SUM(done_count) AS FLOAT) / CAST(SUM(total_count) AS FLOAT) * 100
-            FROM (
-                SELECT eventID, COUNT(*) AS total_count, SUM(CASE WHEN taskStatus = 'done' THEN 1 ELSE 0 END) AS done_count
-                FROM tasks
-                GROUP BY eventID
-            ) t
-            WHERE t.eventID = events.eventID
-        ))
-    `,
-        [],
-        (_, result) => {},
-        (_, error) => {
-          console.log('Error updating event progress', error);
-        },
-      );
-    });
-  });
+  // useEffect(() => {
+  //   db.transaction((tx) => {
+  //     tx.executeSql(
+  //       `UPDATE events
+  //       SET eventProgress = (
+  //         SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = events.eventID)
+  //         FROM tasks
+  //         WHERE tasks.eventID = events.eventID AND tasks.taskStatus = 'done'
+  //       )
+  //       WHERE EXISTS (
+  //         SELECT 1 FROM tasks WHERE tasks.eventID = events.eventID
+  //       );`,
+  //       [],
+  //       (_, result) => {
+  //         console.log('Query executed successfully.');
+  //       },
+  //       (_, error) => {
+  //         console.error('Error executing query:', error);
+  //       }
+  //     );
+  //   });
+  // },[]);
 
   return (
     <DBContext.Provider value={db}>

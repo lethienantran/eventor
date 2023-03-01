@@ -34,13 +34,29 @@ const EditTaskScreen = ({route}) => {
         'UPDATE tasks SET taskName = ?, taskStatus = ? WHERE taskID = ? AND eventID = ?',
         [taskName, taskStatus, route.params.taskID, route.params.eventID],
         (tx, results) => {
-          console.log('TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID + ' successfully updated. Status: ' + taskStatus);
-          navigation.goBack();   
+          console.log('TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID + ' successfully updated. Status: ' + taskStatus); 
         },
         error => {
           console.log('Error update TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID, error);
         }
       );
+      tx.executeSql(
+        `UPDATE events 
+        SET eventProgress = ROUND((
+          SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
+          FROM tasks 
+          WHERE eventID = ? AND taskStatus = 'cp'
+        ))
+        WHERE eventID = ?;`,
+        [route.params.eventID, route.params.eventID, route.params.eventID],
+        (tx, results) => {
+          console.log("Update eventProgress Successfully");
+          navigation.goBack();   
+        },
+        error => {
+          console.log("can't update eventProgress, error: " + error);
+        }
+      )
     });
   };
 
@@ -50,13 +66,29 @@ const EditTaskScreen = ({route}) => {
         'DELETE FROM tasks WHERE taskID = ? AND eventID = ?',
         [route.params.taskID, route.params.eventID],
         (tx, results) => {
-          console.log('TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID + ' successfully deleted.');
-          navigation.goBack();   
+          console.log('TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID + ' successfully deleted.'); 
         },
         error => {
           console.log('Error delete TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID, error);
         }
       );
+      tx.executeSql(
+        `UPDATE events 
+        SET eventProgress = ROUND((
+          SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
+          FROM tasks 
+          WHERE eventID = ? AND taskStatus = 'cp'
+        ))
+        WHERE eventID = ?;`,
+        [route.params.eventID, route.params.eventID, route.params.eventID],
+        (tx, results) => {
+          console.log("Update eventProgress Successfully");
+          navigation.goBack();   
+        },
+        error => {
+          console.log("can't update eventProgress, error: " + error);
+        }
+      )
     });
   };
   return (

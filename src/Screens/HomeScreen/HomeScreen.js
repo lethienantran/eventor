@@ -111,7 +111,7 @@ const HomeScreen = () => {
       //TODO: CHANGE THIS TO UPCOMING INPROGRESS EVENT QUERY ORDER BY eventStartTime
       //for populating in progress event
       tx.executeSql(
-        'SELECT * FROM events WHERE events.eventProgress < 100',
+        'SELECT * FROM events WHERE  eventProgress < 100',
         [],
         (tx, results) => {
           var temp = [];
@@ -121,7 +121,6 @@ const HomeScreen = () => {
           setData(temp);
         },
       );
-      //TODO: DISCUSS IF WE SHOULD DISPLAY TOTAL EVENTS or TOTAL UPCOMING EVENTS
       //for display totalEvent
       tx.executeSql(
         'SELECT COUNT(*) as count FROM events',
@@ -138,10 +137,10 @@ const HomeScreen = () => {
   const listItemView = item => {
     //format dateTime
     const eventStartTime = moment(new Date(item.eventStartTime)).format(
-      'MM/DD/YYYY',
+      'MM/DD/YYYY HH:mm',
     );
     const eventEndTime = moment(new Date(item.eventEndTime)).format(
-      'MM/DD/YYYY',
+      'MM/DD/YYYY HH:mm',
     );
     return (
       <TouchableOpacity
