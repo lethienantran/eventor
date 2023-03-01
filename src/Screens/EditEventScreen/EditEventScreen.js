@@ -11,7 +11,7 @@ import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
 // Icons and Fonts
 import {RFPercentage} from 'react-native-responsive-fontsize';
-
+import Feather from 'react-native-vector-icons/Feather';
 // Database
 import {DBContext} from '../../../App';
 import CustomButton from '../../components/CustomButton';
@@ -24,22 +24,22 @@ import CustomInputField from '../../components/CustomInputField';
 import StartEventTimePicker from '../../components/StartEventTimePicker';
 import EndEventTimePicker from '../../components/EndEventTimePicker';
 
-const EditEventScreen = () => {
+const EditEventScreen = ({route}) => {
   const [keyBoardStatus, setKeyboardStatus] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
   /* Storing User Data entries */
-  const [eventName, setEventName] = useState('');
-  const [eventDescription, setEventDescription] = useState('');
-  const [eventLocation, setEventLocation] = useState('');
-  const [eventStartTime, setEventStartTime] = useState(new Date());
-  const [eventEndTime, setEventEndTime] = useState(new Date());
-  const [endDateText, setEndDateText] = useState(eventStartTime);
+  const [eventName, setEventName] = useState(route.params.eventName);
+  const [eventDescription, setEventDescription] = useState(route.params.eventDescription);
+  const [eventLocation, setEventLocation] = useState(route.params.eventLocation);
+  const [eventStartTime, setEventStartTime] = useState(new Date(route.params.eventStartTime));
+  const [eventEndTime, setEventEndTime] = useState(new Date(route.params.eventEndTime));
+  const [endDateText, setEndDateText] = useState(eventEndTime);
   //get CurrentDate to set minimumDate
   const currentDate = new Date();
-
+  var isBannerUpdate = false; 
   //variable to setMaxDate to 7 years from now
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 7);
@@ -66,63 +66,62 @@ const EditEventScreen = () => {
       if (response && response.assets) {
         console.log('Image Selected:', response.assets[0].uri);
         setImage(response.assets[0].uri);
+        isBannerUpdate = true;
       }
     });
   };
 
-  const onCreatePressed = async() => {
+  const onDeletePressed = () => {
+
+  };
+
+  const onUpdatePressed = async() => {
     try{
-      if(!eventName){
+      if(!eventName || eventName.length === 0){
         setModalVisible(true);
         setModalMessage('Please enter an event name. It can be no longer than 30 characters.');
         return false;
       }
-      else if(!eventLocation){
+      else if(!eventLocation || eventLocation.length === 0){
         setModalVisible(true);
         setModalMessage('Please enter a location for your event. It can be no longer than 30 characters.');
         return false;
       }
       //read the file at path - this case is image dir/path and encoded as base64.
-      const imageData = (image !== null ? (await RNFS.readFile(image, 'base64')) : (null));
+      const imageData = (isBannerUpdate !== false ? (await RNFS.readFile(image, 'base64')) : (null));
       db.transaction(tx => {
-        tx.executeSql(
-          //Insert all entered values.
-          `INSERT INTO events 
-          (eventName, eventStartTime, eventEndTime, eventCaption, eventImage, eventProgress, location) 
-          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [
-            eventName,
-            eventStartTime.toString(),
-            eventEndTime.toString(),
-            eventDescription,
-            imageData,
-            0,
-            eventLocation,
-          ],
-          (tx, results) => {
-            console.log("Event successfully uploaded to database and go back");
-            navigation.goBack();
-          },
-          error => {
-            console.log("Error uploading event to database: ", error);
-          }
-        );
+        if(isBannerUpdate){
+          tx.executeSql(
+            'UPDATE events SET eventName = ?, eventCaption = ?, eventStartTime = ?, eventEndTime = ? eventImage = ?, location = ? WHERE eventID = ?',
+            [eventName, eventDescription, eventStartTime.toString(), eventEndTime.toString(), imageData, eventLocation, route.params.eventID,],
+            (tx, results) => {
+              console.log('EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.');
+              navigation.goBack();   
+            },
+            error => {
+              console.log('Error update EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.', error);
+            }
+          );
+        }
+        else{
+          tx.executeSql(
+            'UPDATE events SET eventName = ?, eventCaption = ?, eventStartTime = ?, eventEndTime = ?, location = ? WHERE eventID = ?',
+            [eventName, eventDescription, eventStartTime.toString(), eventEndTime.toString(), eventLocation, route.params.eventID,],
+            (tx, results) => {
+              console.log('EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.');
+              navigation.goBack();   
+            },
+            error => {
+              console.log('Error update EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.', error);
+            }
+          );
+        }
       });
     }
     catch(error){
       console.log("error reading image file: ", error);
     }
   };
-  useEffect(()=>{
-
-    // console.log("eventName: " + eventName);
-    // console.log("eventDescription: " + eventDescription); 
-    // console.log("eventStartTime: " + eventStartTime);
-    // console.log("eventEndTime: " + eventEndTime);
-    // console.log("eventImage: " + image);
-    // console.log("eventLocation: " + eventLocation);
-
-    });
   useEffect(()=>{
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardStatus(true);
@@ -154,7 +153,7 @@ const EditEventScreen = () => {
           </View>
 
         </Modal>
-        <Logo hasBack={true} title='Create Event' onPress={onBackPressed}/>
+        <Logo hasBack={true} title='Edit Event' onPress={onBackPressed}/>
         <View style={styles.contentContainer}>
           <View style={styles.uploadBannerContainer}>
             <Text style={styles.uploadBannerText}>Upload your event banner here.</Text>
@@ -184,9 +183,12 @@ const EditEventScreen = () => {
               <View style={keyBoardStatus ? (styles.bumpLastItemActive) : (styles.bumpLastItemInactive)}/> 
             </ScrollView>
           </View>
-         <View style={styles.buttonContainer}>
-          <CustomButton onPress={()=>{onCreatePressed(image)}} type="Add" text="Create" />
-         </View>
+          <View style={styles.buttonsContainer}>
+            <CustomButton onPress={onUpdatePressed} type="Update" text="Update" />
+            <Pressable style={styles.deleteButtonContainer} onPress={onDeletePressed}>
+              <Feather name='trash-2' style={styles.deleteIcon}/>
+            </Pressable>
+          </View>
         </View>
       </View>
 
@@ -244,12 +246,20 @@ const styles = ScaledSheet.create({
   eventInfoScrollView:{
     width:'100%',
   },
-  buttonContainer: {
+  buttonsContainer: {
     width: '100%',
     height: '20%',
-    flexDirection: 'column',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    // backgroundColor:'yellow',
+  },
+  deleteButtonContainer:{
+    // backgroundColor:'grey',
+  },
+  deleteIcon:{
+    fontSize:RFPercentage(5),
+    color:'#ABABAB',
   },
   bumpLastItemActive:{
     height:'120@vs',

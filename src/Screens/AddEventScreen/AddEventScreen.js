@@ -72,12 +72,12 @@ const AddEventScreen = () => {
 
   const onCreatePressed = async() => {
     try{
-      if(!eventName){
+      if(!eventName || eventName.length === 0){
         setModalVisible(true);
         setModalMessage('Please enter an event name. It can be no longer than 30 characters.');
         return false;
       }
-      else if(!eventLocation){
+      else if(!eventLocation || eventLocation.length === 0){
         setModalVisible(true);
         setModalMessage('Please enter a location for your event. It can be no longer than 30 characters.');
         return false;
