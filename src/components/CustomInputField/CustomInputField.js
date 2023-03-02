@@ -49,7 +49,8 @@ const styles = ScaledSheet.create({
   descriptionFieldRoot: {
     marginVertical: '1%',
     width: '100%',
-    height: '190@vs',
+    height: '120@vs',
+    // backgroundColor:'green',
   },
   fieldTitle: {
     marginVertical: '2%',
@@ -67,7 +68,7 @@ const styles = ScaledSheet.create({
   descriptionField: {
     borderRadius: '20@ms',
     backgroundColor: '#EEEEEE',
-    height: '84%',
+    height: '66%',
     paddingHorizontal: '5%',
     fontSize: RFPercentage(2.25),
     textAlignVertical: 'top'

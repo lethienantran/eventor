@@ -281,7 +281,7 @@ const styles = ScaledSheet.create({
     flexDirection: 'column',
     justifyContent: 'flex-start',
     width: '100%',
-    height: '50%',
+    height: '19%',
   },
   headerText: {
     marginVertical: '4%',
@@ -290,8 +290,8 @@ const styles = ScaledSheet.create({
     fontSize: RFPercentage(3),
   },
   bodyContainer: {
+    paddingVertical:'2@vs',
     width: '100%',
-    height: '83.7%',
   },
   bodyText: {
     fontFamily: 'Inter-Regular',

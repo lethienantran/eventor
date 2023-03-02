@@ -230,7 +230,7 @@ const EditEventScreen = ({route}) => {
           <View style={styles.eventInfoContainer}>
             <ScrollView style={styles.eventInfoScrollView}>
               <CustomInputField value={eventName} setValue={setEventName} title={'Event Name (' + (!eventName ? 0 : eventName.length) + '/30)'} editable={true} selectTextOnFocus={true} />
-              <CustomInputField value={eventDescription} setValue={setEventDescription} title={'Description (' + (!eventDescription ? 0 : eventDescription.length) + '/120)'} maxLength = {120} editable={true} selectTextOnFocus={true} type='descriptionField'/>
+              <CustomInputField value={eventDescription} setValue={setEventDescription} title={'Description (' + (!eventDescription ? 0 : eventDescription.length) + '/100)'} maxLength = {100} editable={true} selectTextOnFocus={true} type='descriptionField'/>
               <StartEventTimePicker 
                 minDate={minDate} 
                 maxDate={maxDate} 
