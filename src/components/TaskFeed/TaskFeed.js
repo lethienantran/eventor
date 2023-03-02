@@ -1,36 +1,53 @@
 import {View, Text, Pressable, FlatList} from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { ScaledSheet } from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
-import {DBContext} from '../../../App';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
+import SQLite from 'react-native-sqlite-storage';
+import { useIsFocused } from '@react-navigation/native';
 
 const TaskFeed = (props) => {
 
   const [data, setData] = useState([]);
-
+  const isFocused = useIsFocused();
+  
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
-  const db = useContext(DBContext);
-
   
   useEffect(() => {
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM tasks WHERE tasks.eventID = ?',
-        [props.eventID],
-        (tx, results) => {
-          var temp = [];
-          for (let i = 0; i < results.rows.length; ++i) {
-            temp.push(results.rows.item(i));
-          }
-          setData(temp);
+    if(isFocused){
+
+      const db = SQLite.openDatabase(
+        {
+          name: 'eventorDB.db',
+          createFromLocation: 1,
+        },
+        () => {
+          console.log('TaskFeed: Database opened successfully');
+          db.transaction(tx => {
+            tx.executeSql(
+              'SELECT * FROM tasks WHERE tasks.eventID = ?',
+              [props.eventID],
+              (tx, results) => {
+                var temp = [];
+                for (let i = 0; i < results.rows.length; ++i) {
+                  temp.push(results.rows.item(i));
+                }
+                setData(temp);
+                console.log('TaskFeed: Database close.');
+                db.close();
+              },
+            );
+          });
+        },
+        error => {
+          console.log(error);
         },
       );
-    });
-  },[data]);
+    }
+  },[isFocused]);
 
   const listItemView = item => {
     return (
@@ -57,7 +74,7 @@ const TaskFeed = (props) => {
   };
 
   const onEditPressed = (selectedTaskStatus, selectedEventName, selectedTaskName, selectedTaskID, selectedEventID) => {
-    //navigate to edit task screen
+    console.log('TaskFeed: Go to EditTaskScreen');
     navigation.navigate('EditTaskScreen', 
                       {taskStatus: selectedTaskStatus, eventName: selectedEventName, taskName: selectedTaskName, taskID: selectedTaskID, eventID: selectedEventID});
   };

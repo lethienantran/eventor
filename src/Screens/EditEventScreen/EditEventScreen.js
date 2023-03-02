@@ -6,15 +6,15 @@ import {
   Keyboard,
   Modal,
 } from 'react-native';
-import React, {useState, useContext, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
+import CustomButton from '../../components/CustomButton';
 // Icons and Fonts
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import Feather from 'react-native-vector-icons/Feather';
 // Database
-import {DBContext} from '../../../App';
-import CustomButton from '../../components/CustomButton';
+import SQLite from 'react-native-sqlite-storage';
 // Images
 import {launchImageLibrary} from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
@@ -24,10 +24,10 @@ import CustomInputField from '../../components/CustomInputField';
 import StartEventTimePicker from '../../components/StartEventTimePicker';
 import EndEventTimePicker from '../../components/EndEventTimePicker';
 
+
 const EditEventScreen = ({route}) => {
 
   /*Inputting data in DB*/
-  const db = useContext(DBContext);
 
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
@@ -76,35 +76,50 @@ const EditEventScreen = ({route}) => {
 
   //when BackButton pressed, just go back
   const onBackPressed = () =>{
+    console.log('EditEventScreen: Go Back.')
     navigation.goBack();
   };
 
   //delete event and task when pressed delete button
   const onDeletePressed = () => {
-    db.transaction(tx => {
-        tx.executeSql(
-          'DELETE FROM tasks WHERE eventID == ?',
-          [route.params.eventID],
-          (tx, results) => {
-            console.log('Tasks from ' + route.params.eventID + ' - \"' + eventName + '\" successfully deleted.');
-          },
-          error => {
-            console.log('Error delete tasks from eventID: ' + route.params.eventID + '.', error);
-          }
-        );
-        tx.executeSql(
-          'DELETE FROM events WHERE eventID == ?',
-          [route.params.eventID],
-          (tx, results) => {
-            console.log('EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully deleted.');
-            navigation.goBack();   
-            navigation.goBack();   
-          },
-          error => {
-            console.log('Error delete event of eventID: ' + route.params.eventID + '.', error);
-          }
-        );
-    });
+    const db = SQLite.openDatabase(
+    {
+      name: 'eventorDB.db',
+      createFromLocation: 1,
+    },
+    () => {
+      console.log('EditEventScreen: Database opened successfully');
+      db.transaction(tx => {
+          tx.executeSql(
+            'DELETE FROM tasks WHERE eventID == ?',
+            [route.params.eventID],
+            (tx, results) => {
+              console.log('EditEventScreen: Tasks from ' + route.params.eventID + ' - \"' + eventName + '\" successfully deleted.');
+            },
+            error => {
+              console.log('EditEventScreen: Error delete tasks from eventID: ' + route.params.eventID + '.', error);
+            }
+          );
+          tx.executeSql(
+            'DELETE FROM events WHERE eventID == ?',
+            [route.params.eventID],
+            (tx, results) => {
+              console.log('EditEventScreen: EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully deleted.');
+              navigation.goBack();   
+              navigation.goBack();   
+              console.log('EditEventScreen: Database close.');
+              db.close();
+            },
+            error => {
+              console.log('EditEventScreen: Error delete event of eventID: ' + route.params.eventID + '.', error);
+            }
+          );
+      });
+    },
+    error => {
+      console.log(error);
+    },
+    );
   };
 
   //update banner if new one is browsed, update event name, location, information
@@ -122,34 +137,49 @@ const EditEventScreen = ({route}) => {
       }
       //read the file at path - this case is image dir/path and encoded as base64.
       const imageData = (isBannerUpdate !== false ? (await RNFS.readFile(image, 'base64')) : (null));
-      db.transaction(tx => {
-        if(isBannerUpdate){
-          tx.executeSql(
-            'UPDATE events SET eventName = ?, eventCaption = ?, eventStartTime = ?, eventEndTime = ?, eventImage = ?, location = ? WHERE eventID = ?',
-            [eventName, eventDescription, eventStartTime.toString(), eventEndTime.toString(), imageData, eventLocation, route.params.eventID,],
-            (tx, results) => {
-              console.log('EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.');
-              navigation.goBack();   
-            },
-            error => {
-              console.log('Error update EventID: ' + route.params.eventID + ' - \"' + eventName + '\" can\'t updated.', error);
+      const db = SQLite.openDatabase(
+        {
+          name: 'eventorDB.db',
+          createFromLocation: 1,
+        },
+        () => {
+          console.log('EditEventScreen: Database opened successfully');
+          db.transaction(tx => {
+            if(isBannerUpdate){
+              tx.executeSql(
+                'UPDATE events SET eventName = ?, eventCaption = ?, eventStartTime = ?, eventEndTime = ?, eventImage = ?, location = ? WHERE eventID = ?',
+                [eventName, eventDescription, eventStartTime.toString(), eventEndTime.toString(), imageData, eventLocation, route.params.eventID,],
+                (tx, results) => {
+                  console.log('EditEventScreen: EventID - ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.');
+                  console.log('EditEventScreen: Database close.')
+                  navigation.goBack();   
+                },
+                error => {
+                  console.error('EditEventScreen: Error update EventID - ' + route.params.eventID + ' - \"' + eventName + '\" can\'t updated.', error);
+                }
+              );
             }
-          );
-        }
-        else{
-          tx.executeSql(
-            'UPDATE events SET eventName = ?, eventCaption = ?, eventStartTime = ?, eventEndTime = ?, location = ? WHERE eventID = ?',
-            [eventName, eventDescription, eventStartTime.toString(), eventEndTime.toString(), eventLocation, route.params.eventID,],
-            (tx, results) => {
-              console.log('EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.');
-              navigation.goBack();   
-            },
-            error => {
-              console.log('Error update EventID: ' + route.params.eventID + ' - \"' + eventName + '\" can\'t updated.', error);
+            else{
+              tx.executeSql(
+                'UPDATE events SET eventName = ?, eventCaption = ?, eventStartTime = ?, eventEndTime = ?, location = ? WHERE eventID = ?',
+                [eventName, eventDescription, eventStartTime.toString(), eventEndTime.toString(), eventLocation, route.params.eventID,],
+                (tx, results) => {
+                  console.log('EditEventScreen: EventID - ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.');
+                  console.log('EditEventScreen: Database close.')
+                  navigation.goBack();   
+                  db.close();
+                },
+                error => {
+                  console.error('EditEventScreen: Error update EventID - ' + route.params.eventID + ' - \"' + eventName + '\" can\'t updated.', error);
+                }
+              );
             }
-          );
-        }
-      });
+          });
+        },
+        error => {
+          console.log(error);
+        },
+      );
     }
     catch(error){
       console.log("error reading image file: ", error);

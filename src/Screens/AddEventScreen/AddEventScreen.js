@@ -6,7 +6,7 @@ import {
   Keyboard,
   Modal,
 } from 'react-native';
-import React, {useState, useContext, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
 
@@ -14,7 +14,7 @@ import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
 
 // Database
-import {DBContext} from '../../../App';
+// import {DBContext} from '../../../App';
 import CustomButton from '../../components/CustomButton';
 
 // Images
@@ -27,10 +27,9 @@ import CustomInputField from '../../components/CustomInputField';
 import StartEventTimePicker from '../../components/StartEventTimePicker';
 import EndEventTimePicker from '../../components/EndEventTimePicker';
 
-const AddEventScreen = () => {
+import SQLite from 'react-native-sqlite-storage';
 
-  /*Inputting data in DB*/
-  const db = useContext(DBContext);
+const AddEventScreen = () => {
 
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
@@ -93,30 +92,44 @@ const AddEventScreen = () => {
       }
       //read the file at path - this case is image dir/path and encoded as base64.
       const imageData = (image !== null ? (await RNFS.readFile(image, 'base64')) : (null));
-      db.transaction(tx => {
-        tx.executeSql(
-          //Insert all entered values.
-          `INSERT INTO events 
-          (eventName, eventStartTime, eventEndTime, eventCaption, eventImage, eventProgress, location) 
-          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [
-            eventName,
-            eventStartTime.toString(),
-            eventEndTime.toString(),
-            eventDescription,
-            imageData,
-            0,
-            eventLocation,
-          ],
-          (tx, results) => {
-            console.log("Event successfully uploaded to database and go back");
-            navigation.goBack();
-          },
-          error => {
-            console.log("Error uploading event to database: ", error);
-          }
-        );
-      });
+      const db = SQLite.openDatabase(
+        {
+          name: 'eventorDB.db',
+          createFromLocation: 1,
+        },
+        () => {
+          console.log('AddEventScreen: Database opened successfully');
+          db.transaction(tx => {
+            tx.executeSql(
+              //Insert all entered values.
+              `INSERT INTO events 
+              (eventName, eventStartTime, eventEndTime, eventCaption, eventImage, eventProgress, location) 
+              VALUES (?, ?, ?, ?, ?, ?, ?)`,
+              [
+                eventName,
+                eventStartTime.toString(),
+                eventEndTime.toString(),
+                eventDescription,
+                imageData,
+                0,
+                eventLocation,
+              ],
+              (tx, results) => {
+                console.log("Event successfully uploaded to database and go back");
+                console.log('AddEventScreen: Database close.');
+                navigation.goBack();
+                db.close();
+              },
+              error => {
+                console.log("Error uploading event to database: ", error);
+              }
+            );
+          });
+        },
+        error => {
+          console.log(error);
+        },
+      );
     }
     catch(error){
       console.log("error reading image file: ", error);

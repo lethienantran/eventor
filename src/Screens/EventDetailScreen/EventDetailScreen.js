@@ -5,35 +5,25 @@ import {
   ImageBackground,
   ScrollView,
 } from 'react-native';
-import React, {useContext, useState, useEffect} from 'react';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import React, {useState, useEffect} from 'react';
+import {useNavigation} from '@react-navigation/native';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import Logo from '../../components/Logo';
-import {DBContext} from '../../../App';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import TaskFeed from '../../components/TaskFeed';
 import ViewModeButton from '../../components/ViewModeButton';
+import SQLite from 'react-native-sqlite-storage';
+import { useIsFocused } from '@react-navigation/native';
 
-const retrieveSelectedEventID = async () => {
-  try {
-    const currSelectedEventID = await AsyncStorage.getItem('selectedEventID');
-    return currSelectedEventID !== null ? currSelectedEventID : null;
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const EventDetailScreen = () => {
+const EventDetailScreen = ({route}) => {
 
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
 
-  //database
-  const db = useContext(DBContext);
+  const isFocused = useIsFocused();
 
   //data
   const [eventName, setEventName] = useState('');
@@ -45,59 +35,46 @@ const EventDetailScreen = () => {
   const [viewMode, setViewMode] = useState('description');
   const [eventImage, setEventImage] = useState();
 
-  const [currentSelectedEventID, setCurrentSelectedEventID] = useState();
+  const [currentSelectedEventID, setCurrentSelectedEventID] = useState(route.params.eventID);
 
-  const setSelectedEventID = async () => {
-    try {
-      const val = await retrieveSelectedEventID();
-      if (val !== null) {
-        return val;
-      } else {
-        console.error('No SelectedEventID found');
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  useEffect(() => {
+    if(isFocused){
 
-  useFocusEffect(() => {
-    setSelectedEventID().then(setCurrentSelectedEventID);
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM events WHERE eventID = ?',
-        [currentSelectedEventID],
-        (tx, results) => {
-          setEventName(results.rows.item(0).eventName);
-          setLocation(results.rows.item(0).location);
-          setProgression(results.rows.item(0).eventProgress);
-          setDescription(results.rows.item(0).eventCaption);
-          setEventImage(results.rows.item(0).eventImage);
-          setEventStartTime(results.rows.item(0).eventStartTime);
-          setEventEndTime(results.rows.item(0).eventEndTime);
+      const db = SQLite.openDatabase(
+        {
+          name: 'eventorDB.db',
+          createFromLocation: 1,
+        },
+        () => {
+          console.log('EventDetailScreen: Database opened successfully');
+          db.transaction(tx => {
+            tx.executeSql(
+              'SELECT * FROM events WHERE eventID = ?',
+              [currentSelectedEventID],
+              (tx, results) => {
+                setEventName(results.rows.item(0).eventName);
+                setLocation(results.rows.item(0).location);
+                setProgression(results.rows.item(0).eventProgress);
+                setDescription(results.rows.item(0).eventCaption);
+                setEventImage(results.rows.item(0).eventImage);
+                setEventStartTime(results.rows.item(0).eventStartTime);
+                setEventEndTime(results.rows.item(0).eventEndTime);
+                console.log('EventDetailScreen: Database close.')
+                db.close();
+              },
+            );
+          });
+        },
+        error => {
+          console.log(error);
         },
       );
-    });
-  });
-
-  const onBackPressed = async () => {
-    try {
-      //remove the selectedClubID value
-      await AsyncStorage.removeItem('selectedEventID');
-
-      const currSelectedEventID = await retrieveSelectedEventID();
-
-      if (currSelectedEventID == null) {
-        console.log(
-          'BackPressed! The selectedEventID in AsynStorage is removed and now become ' +
-            currSelectedEventID +
-            '.',
-        );
-      }
-
-      navigation.goBack();
-    } catch (error) {
-      console.error(error);
     }
+  },[isFocused]);
+
+  const onBackPressed = () => {
+    console.log('EventDetailScreen: Go Back.');
+    navigation.goBack();
   };
 
   //on edit press go to editeventscreen with parameters.
@@ -108,7 +85,7 @@ const EventDetailScreen = () => {
 
   //navigate to add task screen when add pressed
   const onAddTaskPressed = () => {
-    navigation.navigate('AddTaskScreen');
+    navigation.navigate('AddTaskScreen', {eventName: eventName, eventID: currentSelectedEventID});
   };
 
   //change to description view mode

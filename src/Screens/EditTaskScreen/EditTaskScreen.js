@@ -1,5 +1,5 @@
 import {View, Text, Pressable, Modal} from 'react-native';
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
 import Feather from 'react-native-vector-icons/Feather';
@@ -8,13 +8,14 @@ import {RFPercentage} from 'react-native-responsive-fontsize';
 import CustomInputField from '../../components/CustomInputField';
 import {ScrollView} from 'react-native-gesture-handler';
 import CustomButton from '../../components/CustomButton';
-import {DBContext} from '../../../App';
 import Octicons from 'react-native-vector-icons/Octicons';
 
+import SQLite from 'react-native-sqlite-storage';
+
 const EditTaskScreen = ({route}) => {
+
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
-  const db = useContext(DBContext);
   
   //modal for notification
   const [modalVisible, setModalVisible] = useState(false);
@@ -38,67 +39,93 @@ const EditTaskScreen = ({route}) => {
       setModalMessage('Please enter a task name. It can be no longer than 30 characters.');
       return false;
     }
-    db.transaction(tx => {
-      tx.executeSql(
-        'UPDATE tasks SET taskName = ?, taskStatus = ? WHERE taskID = ? AND eventID = ?',
-        [taskName, taskStatus, route.params.taskID, route.params.eventID],
-        (tx, results) => {
-          console.log('TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID + ' successfully updated. Status: ' + taskStatus); 
-        },
-        error => {
-          console.log('Error update TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID, error);
-        }
-      );
-      tx.executeSql(
-        `UPDATE events 
-        SET eventProgress = ROUND((
-          SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
-          FROM tasks 
-          WHERE eventID = ? AND taskStatus = 'cp'
-        ))
-        WHERE eventID = ?;`,
-        [route.params.eventID, route.params.eventID, route.params.eventID],
-        (tx, results) => {
-          console.log("Update eventProgress Successfully");
-          navigation.goBack();   
-        },
-        error => {
-          console.log("can't update eventProgress, error: " + error);
-        }
-      )
-    });
+    const db = SQLite.openDatabase(
+      {
+        name: 'eventorDB.db',
+        createFromLocation: 1,
+      },
+      () => {
+        console.log('EditTaskScreen: Database opened successfully');
+        db.transaction(tx => {
+          tx.executeSql(
+            'UPDATE tasks SET taskName = ?, taskStatus = ? WHERE taskID = ? AND eventID = ?',
+            [taskName, taskStatus, route.params.taskID, route.params.eventID],
+            (tx, results) => {
+              console.log('EditTaskScreen: TaskID - ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID + ' successfully updated. Status: ' + taskStatus); 
+            },
+            error => {
+              console.error('EditTaskScreen: Error update TaskID - ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID, error);
+            }
+          );
+          tx.executeSql(
+            `UPDATE events 
+            SET eventProgress = ROUND((
+              SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
+              FROM tasks 
+              WHERE eventID = ? AND taskStatus = 'cp'
+            ))
+            WHERE eventID = ?;`,
+            [route.params.eventID, route.params.eventID, route.params.eventID],
+            (tx, results) => {
+              console.log("EditTaskScreen: Update eventProgress Successfully");
+              console.log("EditTaskScreen: Database close.");
+              navigation.goBack();   
+              db.close();
+            },
+            error => {
+              console.error("EditTaskScreen: Can't update eventProgress, error: " + error);
+            }
+          )
+        });
+      },
+      error => {
+        console.error(error);
+      },
+    );
   };
 
   const onDeletePressed = () => {
-    db.transaction(tx => {
-      tx.executeSql(
-        'DELETE FROM tasks WHERE taskID = ? AND eventID = ?',
-        [route.params.taskID, route.params.eventID],
-        (tx, results) => {
-          console.log('TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID + ' successfully deleted.'); 
-        },
-        error => {
-          console.log('Error delete TaskID: ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID, error);
-        }
-      );
-      tx.executeSql(
-        `UPDATE events 
-        SET eventProgress = ROUND((
-          SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
-          FROM tasks 
-          WHERE eventID = ? AND taskStatus = 'cp'
-        ))
-        WHERE eventID = ?;`,
-        [route.params.eventID, route.params.eventID, route.params.eventID],
-        (tx, results) => {
-          console.log("Update eventProgress Successfully");
-          navigation.goBack();   
-        },
-        error => {
-          console.log("can't update eventProgress, error: " + error);
-        }
-      )
-    });
+    const db = SQLite.openDatabase(
+      {
+        name: 'eventorDB.db',
+        createFromLocation: 1,
+      },
+      () => {
+        console.log('EditTaskScreen: Database opened successfully');
+        db.transaction(tx => {
+          tx.executeSql(
+            'DELETE FROM tasks WHERE taskID = ? AND eventID = ?',
+            [route.params.taskID, route.params.eventID],
+            (tx, results) => {
+              console.log('EditTaskScreen: TaskID - ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID + ' successfully deleted.'); 
+            },
+            error => {
+              console.log('EditTaskScreen: Error delete TaskID - ' + route.params.taskID + ' - \"' + taskName + '\" from eventID: ' + route.params.eventID, error);
+            }
+          );
+          tx.executeSql(
+            `UPDATE events 
+            SET eventProgress = ROUND((
+              SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
+              FROM tasks 
+              WHERE eventID = ? AND taskStatus = 'cp'
+            ))
+            WHERE eventID = ?;`,
+            [route.params.eventID, route.params.eventID, route.params.eventID],
+            (tx, results) => {
+              console.log("EditTaskScreen: Update eventProgress Successfully");
+              navigation.goBack();   
+            },
+            error => {
+              console.log("EditTaskScreen: Can't update eventProgress, error: " + error);
+            }
+          )
+        });
+      },
+      error => {
+        console.log(error);
+      },
+    );
   };
   return (
     <ScrollView contentContainerStyle={styles.root}>

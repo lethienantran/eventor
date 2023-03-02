@@ -1,22 +1,20 @@
 import {View, Text, Pressable, ImageBackground, FlatList} from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
-import React, {useState, useContext, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
 import moment from 'moment';
-import eventsBanner from '../../../assets/images/eventsBanner.png';
-import {DBContext} from '../../../App';
 import Logo from '../../components/Logo';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import SQLite from 'react-native-sqlite-storage';
+import { useIsFocused } from '@react-navigation/native';
 
 const HomeScreen = () => {
-  //variables initialization
-  //using db in screen/components
-  const db = useContext(DBContext);
+
+  const isFocused = useIsFocused();
 
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
@@ -50,7 +48,6 @@ const HomeScreen = () => {
   //Get the day of the month (1-31)
   const dayOfMonth = today.getDate();
 
-  //function declaration:
   //use when add button is pressed, use to navigate to AddEventScreen screen
   const addButtonPressed = () => {
     navigation.navigate('AddEventScreen');
@@ -62,20 +59,9 @@ const HomeScreen = () => {
   };
 
   //use when an event item is pressed to store selectedEventID into asyncstorage
-  const onEventPressed = async selectedEventID => {
-    // navigation.navigate('EventDetailScreen');
-    AsyncStorage.setItem('selectedEventID', selectedEventID.toString())
-      .then(() => {
-        console.log('SelectedEventID: ' + selectedEventID.toString());
-        navigation.navigate('EventDetailScreen');
-      })
-      .catch(error => {
-        console.error(
-          'Error',
-          'Could not save SelectedEventID to AsyncStorage!',
-        );
-        console.error(error);
-      });
+  const onEventPressed = (selectedEventID) => {
+    console.log('HomeScreen: Go to eventID - ' + selectedEventID);
+    navigation.navigate('EventDetailScreen', {eventID: selectedEventID});
   };
 
   //checkDay to display on Screen
@@ -107,31 +93,48 @@ const HomeScreen = () => {
   //run query, checkDay
   useEffect(() => {
     checkDay();
-    db.transaction(tx => {
-      //TODO: CHANGE THIS TO UPCOMING INPROGRESS EVENT QUERY ORDER BY eventStartTime
-      //for populating in progress event
-      tx.executeSql(
-        'SELECT * FROM events WHERE  eventProgress < 100',
-        [],
-        (tx, results) => {
-          var temp = [];
-          for (let i = 0; i < results.rows.length; ++i) {
-            temp.push(results.rows.item(i));
-          }
-          setData(temp);
+    if(isFocused){
+      const db = SQLite.openDatabase(
+        {
+          name: 'eventorDB.db',
+          createFromLocation: 1,
+        },
+        () => {
+          console.log('HomeScreen: Database opened successfully');
+          db.transaction(tx => {
+            //TODO: CHANGE THIS TO UPCOMING INPROGRESS EVENT QUERY ORDER BY eventStartTime
+            //for populating in progress event
+            tx.executeSql(
+              'SELECT * FROM events WHERE  eventProgress < 100',
+              [],
+              (tx, results) => {
+                var temp = [];
+                for (let i = 0; i < results.rows.length; ++i) {
+                  temp.push(results.rows.item(i));
+                }
+                setData(temp);
+              },
+            );
+            //for display totalEvent
+            tx.executeSql(
+              'SELECT COUNT(*) as count FROM events',
+              [],
+              (tx, results) => {
+                const count = results.rows.item(0).count;
+                setTotalEvent(count);
+                console.log('HomeScreen: Database closed.');
+                db.close();
+              },
+            );
+          });
+        },
+        error => {
+          console.log(error);
         },
       );
-      //for display totalEvent
-      tx.executeSql(
-        'SELECT COUNT(*) as count FROM events',
-        [],
-        (tx, results) => {
-          const count = results.rows.item(0).count;
-          setTotalEvent(count);
-        },
-      );
-    });
-  },[data]);
+    }
+
+  },[isFocused]);
 
   //listItemView for FlatList (item/cards) show on screen
   const listItemView = item => {

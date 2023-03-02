@@ -1,5 +1,5 @@
 import {View, Text, Pressable, Modal} from 'react-native';
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
 import Inoicons from 'react-native-vector-icons/Ionicons';
@@ -8,58 +8,22 @@ import {RFPercentage} from 'react-native-responsive-fontsize';
 import CustomInputField from '../../components/CustomInputField';
 import {ScrollView} from 'react-native-gesture-handler';
 import CustomButton from '../../components/CustomButton';
-import {DBContext} from '../../../App';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import SQLite from 'react-native-sqlite-storage';
 
-const retrieveSelectedEventID = async () => {
-  try {
-    const currSelectedEventID = await AsyncStorage.getItem('selectedEventID');
-    return currSelectedEventID !== null ? currSelectedEventID : null;
-  } catch (error) {
-    console.error(error);
-  }
-};
+const AddTaskScreen = ({route}) => {
 
-const AddTaskScreen = () => {
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
-  const db = useContext(DBContext);
-
-  const [currentSelectedEventID, setCurrentSelectedEventID] = useState();
 
   //setModalVisibility and message
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
-  const setSelectedEventID = async () => {
-    try {
-      const val = await retrieveSelectedEventID();
-      if (val !== null) {
-        return val;
-      } else {
-        console.error('No SelectedEventID found');
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  useEffect(() => {
-    setSelectedEventID().then(setCurrentSelectedEventID);
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM events WHERE eventID = ?',
-        [currentSelectedEventID],
-        (tx, results) => {
-          setEventName(results.rows.item(0).eventName);
-        },
-      );
-    });
-  }, [currentSelectedEventID]);
-
-  const [eventName, setEventName] = useState('');
+  const [eventName, setEventName] = useState(route.params.eventName);
   const [taskName, setTaskName] = useState('');
   const [taskStatus, setTaskStatus] = useState('In-Progress');
+
+  const [currentSelectedEventID, setCurrentSelectedEventID] = useState(route.params.eventID);
 
   const onBackPressed = () => {
     navigation.goBack();
@@ -71,35 +35,49 @@ const AddTaskScreen = () => {
       setModalMessage('Please enter a task name. It can be no longer than 30 characters.');
       return false;
     }
-    db.transaction(tx => {
-      tx.executeSql(
-        'INSERT INTO tasks (taskName, taskStatus, eventID) VALUES (?, ?, ?)',
-        [taskName, 'ip', currentSelectedEventID],
-        (tx, results) => {
-          console.log('Task \"' + taskName + '\" successfully added to ' + eventName + '\'s id:' + currentSelectedEventID);
-        },
-        error => {
-          console.log("Error adding task to database: ", error);
-        }
-      );
-      tx.executeSql(
-        `UPDATE events 
-        SET eventProgress = Round((
-          SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
-          FROM tasks 
-          WHERE eventID = ? AND taskStatus = 'cp'
-        ))
-        WHERE eventID = ?;`,
-        [currentSelectedEventID,currentSelectedEventID, currentSelectedEventID],
-        (tx, results) => {
-          console.log("Update Successfully");
-          navigation.goBack();   
-        },
-        error => {
-          console.log("can't update, error: " + error);
-        }
-      )
-    });
+    const db = SQLite.openDatabase(
+      {
+        name: 'eventorDB.db',
+        createFromLocation: 1,
+      },
+      () => {
+        console.log('AddTaskScreen: Database opened successfully');
+        db.transaction(tx => {
+          tx.executeSql(
+            'INSERT INTO tasks (taskName, taskStatus, eventID) VALUES (?, ?, ?)',
+            [taskName, 'ip', currentSelectedEventID],
+            (tx, results) => {
+              console.log('AddTaskScreen: Task \"' + taskName + '\" successfully added to ' + eventName + '\'s id:' + currentSelectedEventID);
+            },
+            error => {
+              console.log("AddTaskScreen: Error adding task to database: ", error);
+            }
+          );
+          tx.executeSql(
+            `UPDATE events 
+            SET eventProgress = Round((
+              SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
+              FROM tasks 
+              WHERE eventID = ? AND taskStatus = 'cp'
+            ))
+            WHERE eventID = ?;`,
+            [currentSelectedEventID,currentSelectedEventID, currentSelectedEventID],
+            (tx, results) => {
+              console.log("AddTaskScreen: Update Successfully");
+              console.log('AddTaskScreen: Database close.');
+              navigation.goBack();   
+              db.close();
+            },
+            error => {
+              console.log("AddTaskScreen: Can't update, error: " + error);
+            }
+          )
+        });
+      },
+      error => {
+        console.log(error);
+      },
+    );
   };
   return (
     <ScrollView contentContainerStyle={styles.root}>
