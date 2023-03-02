@@ -287,7 +287,7 @@ const styles = ScaledSheet.create({
     marginVertical: '4%',
     fontFamily: 'OpenSans-SemiBold',
     color: 'black',
-    fontSize: RFPercentage(2.9),
+    fontSize: RFPercentage(3),
   },
   bodyContainer: {
     width: '100%',
@@ -296,7 +296,7 @@ const styles = ScaledSheet.create({
   bodyText: {
     fontFamily: 'Inter-Regular',
     color: '#ABABAB',
-    fontSize: RFPercentage(2.2),
+    fontSize: RFPercentage(2.25),
   },
   actionBar: {
     width: '100%',
