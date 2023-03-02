@@ -1,4 +1,4 @@
-import {View, Text, Pressable} from 'react-native';
+import {View, Text, Pressable, Modal} from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
@@ -26,6 +26,10 @@ const AddTaskScreen = () => {
   const db = useContext(DBContext);
 
   const [currentSelectedEventID, setCurrentSelectedEventID] = useState();
+
+  //setModalVisibility and message
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
   const setSelectedEventID = async () => {
     try {
@@ -62,6 +66,11 @@ const AddTaskScreen = () => {
   };
 
   const onCreatePressed = () => {
+    if(!taskName || taskName.length === 0){
+      setModalVisible(true);
+      setModalMessage('Please enter a task name. It can be no longer than 30 characters.');
+      return false;
+    }
     db.transaction(tx => {
       tx.executeSql(
         'INSERT INTO tasks (taskName, taskStatus, eventID) VALUES (?, ?, ?)',
@@ -95,6 +104,21 @@ const AddTaskScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.root}>
       <View style={styles.container}>
+      <Modal 
+          animationType='slide'
+          transparent={true}
+          visible={modalVisible}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalMessageText}>{modalMessage}</Text>
+              <Pressable onPress={()=>setModalVisible(false)}>
+                <Text style={styles.modalCloseText}>Close</Text>
+              </Pressable>
+            </View>
+          </View>
+
+        </Modal>
         <Logo onPress={onBackPressed} title="Create Task" hasBack="true" />
         <View style={styles.contentContainer}>
           <View style={styles.addTaskQuestion}>
@@ -182,6 +206,36 @@ const styles = ScaledSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalContainer:{
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor:'rgba(0, 0, 0, 0.5)'
+  },
+  modalView:{
+    flexDirection:'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width:'92%',
+    height:'18%',
+    borderRadius:'10@ms',
+    backgroundColor:'white',
+  },
+  modalMessageText:{
+    textAlign:'center',
+    paddingHorizontal:'4%',
+    fontFamily:'Inter-Regular',
+    fontSize:RFPercentage(2.25),
+    color:'black',
+    marginVertical:'2%',
+  },
+  modalCloseText:{
+    textAlign:'center',
+    fontFamily:'Inter-Regular',
+    fontSize:RFPercentage(2),
+    color:'#FF3008',
+    marginVertical:'2%',
   },
 });
 export default AddTaskScreen;

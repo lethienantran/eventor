@@ -131,7 +131,7 @@ const HomeScreen = () => {
         },
       );
     });
-  });
+  },[data]);
 
   //listItemView for FlatList (item/cards) show on screen
   const listItemView = item => {
