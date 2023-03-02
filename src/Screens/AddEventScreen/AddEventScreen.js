@@ -9,36 +9,42 @@ import {
 import React, {useState, useContext, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
+
 // Icons and Fonts
 import {RFPercentage} from 'react-native-responsive-fontsize';
 
 // Database
 import {DBContext} from '../../../App';
 import CustomButton from '../../components/CustomButton';
+
 // Images
 import {launchImageLibrary} from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
 import Logo from '../../components/Logo';
 import CustomInputField from '../../components/CustomInputField';
+
 //Date Picker
 import StartEventTimePicker from '../../components/StartEventTimePicker';
 import EndEventTimePicker from '../../components/EndEventTimePicker';
 
 const AddEventScreen = () => {
+
+  /*Inputting data in DB*/
+  const db = useContext(DBContext);
+
+  //call useNavigation to be able to navigate around
+  const navigation = useNavigation();
+
+  //to see if keyboard is active or not
   const [keyBoardStatus, setKeyboardStatus] = useState(false);
 
+  //setModalVisibility and message
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
-  /* Storing User Data entries */
-  const [eventName, setEventName] = useState('');
-  const [eventDescription, setEventDescription] = useState('');
-  const [eventLocation, setEventLocation] = useState('');
-  const [eventStartTime, setEventStartTime] = useState(new Date());
-  const [eventEndTime, setEventEndTime] = useState(new Date());
-  const [endDateText, setEndDateText] = useState(eventStartTime);
-  //get CurrentDate to set minimumDate
-  const currentDate = new Date();
+  // set minimumDate
+  const minDate = new Date();
+  minDate.setFullYear(minDate.getFullYear() - 7);
 
   //variable to setMaxDate to 7 years from now
   const maxDate = new Date();
@@ -47,11 +53,13 @@ const AddEventScreen = () => {
   /* Setting Img UseState */
   const [image, setImage] = useState(null);
 
-  /*Inputting data in DB*/
-  const db = useContext(DBContext);
-
-  //call useNavigation to be able to navigate around
-  const navigation = useNavigation();
+  /* Storing User Data entries */
+  const [eventName, setEventName] = useState('');
+  const [eventDescription, setEventDescription] = useState('');
+  const [eventLocation, setEventLocation] = useState('');
+  const [eventStartTime, setEventStartTime] = useState(new Date());
+  const [eventEndTime, setEventEndTime] = useState(new Date());
+  const [endDateText, setEndDateText] = useState(eventStartTime);
 
   //when BackButton pressed
   const onBackPressed = () =>{
@@ -70,6 +78,7 @@ const AddEventScreen = () => {
     });
   };
 
+  //if create pressed, insert all values
   const onCreatePressed = async() => {
     try{
       if(!eventName || eventName.length === 0){
@@ -113,16 +122,8 @@ const AddEventScreen = () => {
       console.log("error reading image file: ", error);
     }
   };
-  useEffect(()=>{
 
-    // console.log("eventName: " + eventName);
-    // console.log("eventDescription: " + eventDescription); 
-    // console.log("eventStartTime: " + eventStartTime);
-    // console.log("eventEndTime: " + eventEndTime);
-    // console.log("eventImage: " + image);
-    // console.log("eventLocation: " + eventLocation);
-
-    });
+  //start with calling event for 1 time.
   useEffect(()=>{
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardStatus(true);
@@ -136,6 +137,7 @@ const AddEventScreen = () => {
       hideSubscription.remove();
     };
   },[]);
+  
   return (
     <View style={styles.root}>
       <View style={styles.container}>
@@ -167,9 +169,8 @@ const AddEventScreen = () => {
               <CustomInputField value={eventName} setValue={setEventName} title={'Event Name (' + (!eventName ? 0 : eventName.length) + '/30)'} editable={true} selectTextOnFocus={true} />
               <CustomInputField value={eventDescription} setValue={setEventDescription} title={'Description (' + (!eventDescription ? 0 : eventDescription.length) + '/120)'} maxLength = {120} editable={true} selectTextOnFocus={true} type='descriptionField'/>
               <StartEventTimePicker 
-                minDate={currentDate} 
+                minDate={minDate} 
                 maxDate={maxDate} 
-                setEndDateText = {setEndDateText} 
                 startTime={eventStartTime} 
                 title ={"Start Date/Time"} 
                 setStartTime = {setEventStartTime}/>

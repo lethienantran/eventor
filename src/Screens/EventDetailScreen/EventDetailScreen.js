@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  Dimensions,
   Pressable,
   ImageBackground,
   ScrollView,
@@ -15,13 +14,9 @@ import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import Logo from '../../components/Logo';
 import {DBContext} from '../../../App';
-import eventsBanner from '../../../assets/images/eventsBanner.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import AddTaskScreen from '../AddTaskScreen';
 import TaskFeed from '../../components/TaskFeed';
 import ViewModeButton from '../../components/ViewModeButton';
-
-const {height, width} = Dimensions.get('window');
 
 const retrieveSelectedEventID = async () => {
   try {
@@ -34,6 +29,13 @@ const retrieveSelectedEventID = async () => {
 
 const EventDetailScreen = () => {
 
+  //call useNavigation to be able to navigate around
+  const navigation = useNavigation();
+
+  //database
+  const db = useContext(DBContext);
+
+  //data
   const [eventName, setEventName] = useState('');
   const [location, setLocation] = useState('');
   const [progression, setProgression] = useState('');
@@ -42,10 +44,7 @@ const EventDetailScreen = () => {
   const [eventEndTime, setEventEndTime] = useState('');
   const [viewMode, setViewMode] = useState('description');
   const [eventImage, setEventImage] = useState();
-  //call useNavigation to be able to navigate around
-  const navigation = useNavigation();
 
-  const db = useContext(DBContext);
   const [currentSelectedEventID, setCurrentSelectedEventID] = useState();
 
   const setSelectedEventID = async () => {
@@ -101,20 +100,24 @@ const EventDetailScreen = () => {
     }
   };
 
+  //on edit press go to editeventscreen with parameters.
   const onEditPress = (selectedEventID, selectedEventImage, selectedEventName, selectedEventDescription, selectedEventStartTime, selectedEventEndTime, selectedEventLocation) => {
     navigation.navigate('EditEventScreen', 
     {eventID: selectedEventID, eventImage: selectedEventImage, eventName: selectedEventName, eventDescription: selectedEventDescription, eventStartTime: selectedEventStartTime, eventEndTime: selectedEventEndTime, eventLocation: selectedEventLocation});
   }
 
+  //navigate to add task screen when add pressed
   const onAddTaskPressed = () => {
-    //navigate to add task screen
     navigation.navigate('AddTaskScreen');
   };
 
+  //change to description view mode
   const onDescriptionPressed = () => {
     setViewMode('description');
   };
 
+  
+  //change to remaining tasks view mode
   const onRemainingTasksPressed = () => {
     setViewMode('remainingTasks');
   };
@@ -132,7 +135,7 @@ const EventDetailScreen = () => {
         <View style={styles.contentContainer}>
           <View style={styles.eventBannerContainer}>
             <ImageBackground
-              source={{uri: `data:image/jpeg;base64,${eventImage}`}}
+              source={eventImage !== null ? {uri: `data:image/jpeg;base64,${eventImage}`} : (require('../../../assets/images/eventsBanner.png'))}
               resizeMode="cover"
               style={{flex: 1}}
               imageStyle={styles.itemImage}></ImageBackground>

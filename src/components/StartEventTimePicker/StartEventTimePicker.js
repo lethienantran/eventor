@@ -9,7 +9,6 @@ const StartEventTimePicker = ({
     maxDate,
   startTime,
   setStartTime,
-  setEndDateText,
   title,
 }) => {
     const [open, setOpen] = useState(false);
@@ -44,7 +43,6 @@ const StartEventTimePicker = ({
         onConfirm={date => {
           setOpen(false);
           setStartTime(date);
-          setEndDateText(date);
         }}
         onCancel={() => {
           setOpen(false);

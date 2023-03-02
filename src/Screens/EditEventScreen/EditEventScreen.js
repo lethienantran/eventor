@@ -25,27 +25,6 @@ import StartEventTimePicker from '../../components/StartEventTimePicker';
 import EndEventTimePicker from '../../components/EndEventTimePicker';
 
 const EditEventScreen = ({route}) => {
-  const [keyBoardStatus, setKeyboardStatus] = useState(false);
-
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
-
-  /* Storing User Data entries */
-  const [eventName, setEventName] = useState(route.params.eventName);
-  const [eventDescription, setEventDescription] = useState(route.params.eventDescription);
-  const [eventLocation, setEventLocation] = useState(route.params.eventLocation);
-  const [eventStartTime, setEventStartTime] = useState(new Date(route.params.eventStartTime));
-  const [eventEndTime, setEventEndTime] = useState(new Date(route.params.eventEndTime));
-  const [endDateText, setEndDateText] = useState(eventEndTime);
-  //get CurrentDate to set minimumDate
-  const currentDate = new Date();
-  const[isBannerUpdate,setBannerUpdate] = useState(false); 
-  //variable to setMaxDate to 7 years from now
-  const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() + 7);
-
-  /* Setting Img UseState */
-  const [image, setImage] = useState(null);
 
   /*Inputting data in DB*/
   const db = useContext(DBContext);
@@ -53,10 +32,34 @@ const EditEventScreen = ({route}) => {
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
 
-  //when BackButton pressed
-  const onBackPressed = () =>{
-    navigation.goBack();
-  };
+  /* Setting Img UseState */
+  const [image, setImage] = useState(null);
+
+  //keyboard status to check for if keyboard is active or not - use for fitting input fields in scroll view
+  const [keyBoardStatus, setKeyboardStatus] = useState(false);
+
+  //modal for notification
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+
+  //use state of whether the banner is update or not, if update gonna use the new one, if not then keep the old data
+  const[isBannerUpdate,setBannerUpdate] = useState(false); 
+
+  //get CurrentDate to set minimumDate from current date
+  const minDate = new Date();
+  minDate.setFullYear(minDate.getFullYear() - 7);
+
+  //variable to setMaxDate to 7 years from now
+  const maxDate = new Date();
+  maxDate.setFullYear(maxDate.getFullYear() + 7);
+  
+  /* Storing User Data entries */
+  const [eventName, setEventName] = useState(route.params.eventName);
+  const [eventDescription, setEventDescription] = useState(route.params.eventDescription);
+  const [eventLocation, setEventLocation] = useState(route.params.eventLocation);
+  const [eventStartTime, setEventStartTime] = useState(new Date(route.params.eventStartTime));
+  const [eventEndTime, setEventEndTime] = useState(new Date(route.params.eventEndTime));
+  const [endDateText, setEndDateText] = useState(eventEndTime);
 
   //browse image
   const onBrowsePressed = () => {
@@ -71,10 +74,40 @@ const EditEventScreen = ({route}) => {
     });
   };
 
-  const onDeletePressed = () => {
-
+  //when BackButton pressed, just go back
+  const onBackPressed = () =>{
+    navigation.goBack();
   };
 
+  //delete event and task when pressed delete button
+  const onDeletePressed = () => {
+    db.transaction(tx => {
+        tx.executeSql(
+          'DELETE FROM tasks WHERE eventID == ?',
+          [route.params.eventID],
+          (tx, results) => {
+            console.log('Tasks from ' + route.params.eventID + ' - \"' + eventName + '\" successfully deleted.');
+          },
+          error => {
+            console.log('Error delete tasks from eventID: ' + route.params.eventID + '.', error);
+          }
+        );
+        tx.executeSql(
+          'DELETE FROM events WHERE eventID == ?',
+          [route.params.eventID],
+          (tx, results) => {
+            console.log('EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully deleted.');
+            navigation.goBack();   
+            navigation.goBack();   
+          },
+          error => {
+            console.log('Error delete event of eventID: ' + route.params.eventID + '.', error);
+          }
+        );
+    });
+  };
+
+  //update banner if new one is browsed, update event name, location, information
   const onUpdatePressed = async() => {
     try{
       if(!eventName || eventName.length === 0){
@@ -99,7 +132,7 @@ const EditEventScreen = ({route}) => {
               navigation.goBack();   
             },
             error => {
-              console.log('Error update EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.', error);
+              console.log('Error update EventID: ' + route.params.eventID + ' - \"' + eventName + '\" can\'t updated.', error);
             }
           );
         }
@@ -112,7 +145,7 @@ const EditEventScreen = ({route}) => {
               navigation.goBack();   
             },
             error => {
-              console.log('Error update EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.', error);
+              console.log('Error update EventID: ' + route.params.eventID + ' - \"' + eventName + '\" can\'t updated.', error);
             }
           );
         }
@@ -122,6 +155,8 @@ const EditEventScreen = ({route}) => {
       console.log("error reading image file: ", error);
     }
   };
+
+  //start with calling event for 1 time.
   useEffect(()=>{
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardStatus(true);
@@ -135,9 +170,11 @@ const EditEventScreen = ({route}) => {
       hideSubscription.remove();
     };
   },[]);
+
   return (
     <View style={styles.root}>
       <View style={styles.container}>
+        {/* Modal Container */}
         <Modal 
           animationType='slide'
           transparent={true}
@@ -151,7 +188,6 @@ const EditEventScreen = ({route}) => {
               </Pressable>
             </View>
           </View>
-
         </Modal>
         <Logo hasBack={true} title='Edit Event' onPress={onBackPressed}/>
         <View style={styles.contentContainer}>
@@ -166,9 +202,8 @@ const EditEventScreen = ({route}) => {
               <CustomInputField value={eventName} setValue={setEventName} title={'Event Name (' + (!eventName ? 0 : eventName.length) + '/30)'} editable={true} selectTextOnFocus={true} />
               <CustomInputField value={eventDescription} setValue={setEventDescription} title={'Description (' + (!eventDescription ? 0 : eventDescription.length) + '/120)'} maxLength = {120} editable={true} selectTextOnFocus={true} type='descriptionField'/>
               <StartEventTimePicker 
-                minDate={currentDate} 
+                minDate={minDate} 
                 maxDate={maxDate} 
-                setEndDateText = {setEndDateText} 
                 startTime={eventStartTime} 
                 title ={"Start Date/Time"} 
                 setStartTime = {setEventStartTime}/>
