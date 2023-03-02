@@ -39,7 +39,7 @@ const EditEventScreen = ({route}) => {
   const [endDateText, setEndDateText] = useState(eventEndTime);
   //get CurrentDate to set minimumDate
   const currentDate = new Date();
-  var isBannerUpdate = false; 
+  const[isBannerUpdate,setBannerUpdate] = useState(false); 
   //variable to setMaxDate to 7 years from now
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 7);
@@ -66,7 +66,7 @@ const EditEventScreen = ({route}) => {
       if (response && response.assets) {
         console.log('Image Selected:', response.assets[0].uri);
         setImage(response.assets[0].uri);
-        isBannerUpdate = true;
+        setBannerUpdate(true);
       }
     });
   };
@@ -92,7 +92,7 @@ const EditEventScreen = ({route}) => {
       db.transaction(tx => {
         if(isBannerUpdate){
           tx.executeSql(
-            'UPDATE events SET eventName = ?, eventCaption = ?, eventStartTime = ?, eventEndTime = ? eventImage = ?, location = ? WHERE eventID = ?',
+            'UPDATE events SET eventName = ?, eventCaption = ?, eventStartTime = ?, eventEndTime = ?, eventImage = ?, location = ? WHERE eventID = ?',
             [eventName, eventDescription, eventStartTime.toString(), eventEndTime.toString(), imageData, eventLocation, route.params.eventID,],
             (tx, results) => {
               console.log('EventID: ' + route.params.eventID + ' - \"' + eventName + '\" successfully updated.');
