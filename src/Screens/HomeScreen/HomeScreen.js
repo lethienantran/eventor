@@ -281,7 +281,7 @@ const HomeScreen = () => {
             {/* In Progress Title */}
             <View style={styles.inProgressTitleContainer}>
               <View style={styles.inProgressTextContainer}>
-                <Text style={styles.inProgressText}> In-Progress Events </Text>
+                <Text style={styles.inProgressText}> Current In-Progress </Text>
               </View>
               <View style={styles.inProgressIconContainer}>
                 <Pressable>
