@@ -8,12 +8,11 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
 import moment from 'moment';
 import Logo from '../../components/Logo';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import SQLite from 'react-native-sqlite-storage';
-import { useIsFocused } from '@react-navigation/native';
+import {useIsFocused} from '@react-navigation/native';
 
 const HomeScreen = () => {
-
   const isFocused = useIsFocused();
 
   //call useNavigation to be able to navigate around
@@ -59,7 +58,7 @@ const HomeScreen = () => {
   };
 
   //use when an event item is pressed to store selectedEventID into asyncstorage
-  const onEventPressed = (selectedEventID) => {
+  const onEventPressed = selectedEventID => {
     console.log('HomeScreen: Go to eventID - ' + selectedEventID);
     navigation.navigate('EventDetailScreen', {eventID: selectedEventID});
   };
@@ -93,7 +92,7 @@ const HomeScreen = () => {
   //run query, checkDay
   useEffect(() => {
     checkDay();
-    if(isFocused){
+    if (isFocused) {
       const db = SQLite.openDatabase(
         {
           name: 'eventorDB.db',
@@ -105,7 +104,7 @@ const HomeScreen = () => {
             //TODO: CHANGE THIS TO UPCOMING INPROGRESS EVENT QUERY ORDER BY eventStartTime
             //for populating in progress event
             tx.executeSql(
-              'SELECT * FROM events WHERE  eventProgress < 100',
+              `SELECT * FROM events WHERE eventProgress < 100 AND eventEndTime >= strftime('%Y-%m-%d %H-%M','now') ORDER BY eventStartTime ASC`,
               [],
               (tx, results) => {
                 var temp = [];
@@ -133,8 +132,7 @@ const HomeScreen = () => {
         },
       );
     }
-
-  },[isFocused]);
+  }, [isFocused]);
 
   //listItemView for FlatList (item/cards) show on screen
   const listItemView = item => {
@@ -152,7 +150,11 @@ const HomeScreen = () => {
         activeOpacity={0.7}
         onPress={() => onEventPressed(item.eventID)}>
         <ImageBackground
-          source={item.eventImage !== null ? {uri: `data:image/jpeg;base64,${item.eventImage}`} : (require('../../../assets/images/eventsBanner.png'))}
+          source={
+            item.eventImage !== null
+              ? {uri: `data:image/jpeg;base64,${item.eventImage}`}
+              : require('../../../assets/images/eventsBanner.png')
+          }
           resizeMode="cover"
           style={{flex: 1}}
           imageStyle={styles.itemImage}
@@ -264,8 +266,7 @@ const styles = ScaledSheet.create({
     width: '99%',
     height: '91%',
   },
-  
-  
+
   addButtonIcon: {
     fontSize: RFPercentage(13.5),
     marginRight: '5@ms',

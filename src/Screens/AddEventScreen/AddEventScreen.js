@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  Keyboard,
-  Modal,
-} from 'react-native';
+import {View, Text, Pressable, ScrollView, Keyboard, Modal} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
@@ -30,7 +23,6 @@ import EndEventTimePicker from '../../components/EndEventTimePicker';
 import SQLite from 'react-native-sqlite-storage';
 
 const AddEventScreen = () => {
-
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
 
@@ -61,7 +53,7 @@ const AddEventScreen = () => {
   const [endDateText, setEndDateText] = useState(eventStartTime);
 
   //when BackButton pressed
-  const onBackPressed = () =>{
+  const onBackPressed = () => {
     navigation.goBack();
   };
 
@@ -69,7 +61,7 @@ const AddEventScreen = () => {
   const onBrowsePressed = () => {
     const options = {};
     //open the gallery
-    launchImageLibrary(options, (response) => {
+    launchImageLibrary(options, response => {
       if (response && response.assets) {
         console.log('Image Selected:', response.assets[0].uri);
         setImage(response.assets[0].uri);
@@ -78,20 +70,35 @@ const AddEventScreen = () => {
   };
 
   //if create pressed, insert all values
-  const onCreatePressed = async() => {
-    try{
-      if(!eventName || eventName.length === 0){
+  const onCreatePressed = async () => {
+    //convert eventStartTimeStr
+    const startTimeStamp = Date.parse(eventStartTime);
+    const startDateObj = new Date(startTimeStamp);
+    const startIsoStr = startDateObj.toISOString();
+    const eventStartTimeStr = startIsoStr.replace('T', ' ');
+
+    //convert eventEndTimeStr
+    const endTimeStamp = Date.parse(eventStartTime);
+    const endDateObj = new Date(endTimeStamp);
+    const endIsoStr = endDateObj.toISOString();
+    const eventEndTimeStr = endIsoStr.replace('T', ' ');
+    try {
+      if (!eventName || eventName.length === 0) {
         setModalVisible(true);
-        setModalMessage('Please enter an event name. It can be no longer than 30 characters.');
+        setModalMessage(
+          'Please enter an event name. It can be no longer than 30 characters.',
+        );
         return false;
-      }
-      else if(!eventLocation || eventLocation.length === 0){
+      } else if (!eventLocation || eventLocation.length === 0) {
         setModalVisible(true);
-        setModalMessage('Please enter a location for your event. It can be no longer than 30 characters.');
+        setModalMessage(
+          'Please enter a location for your event. It can be no longer than 30 characters.',
+        );
         return false;
       }
       //read the file at path - this case is image dir/path and encoded as base64.
-      const imageData = (image !== null ? (await RNFS.readFile(image, 'base64')) : (null));
+      const imageData =
+        image !== null ? await RNFS.readFile(image, 'base64') : null;
       const db = SQLite.openDatabase(
         {
           name: 'eventorDB.db',
@@ -107,22 +114,24 @@ const AddEventScreen = () => {
               VALUES (?, ?, ?, ?, ?, ?, ?)`,
               [
                 eventName,
-                eventStartTime.toString(),
-                eventEndTime.toString(),
+                eventStartTimeStr,
+                eventEndTimeStr,
                 eventDescription,
                 imageData,
                 0,
                 eventLocation,
               ],
               (tx, results) => {
-                console.log("Event successfully uploaded to database and go back");
+                console.log(
+                  'Event successfully uploaded to database and go back',
+                );
                 console.log('AddEventScreen: Database close.');
                 navigation.goBack();
                 db.close();
               },
               error => {
-                console.log("Error uploading event to database: ", error);
-              }
+                console.log('Error uploading event to database: ', error);
+              },
             );
           });
         },
@@ -130,14 +139,13 @@ const AddEventScreen = () => {
           console.log(error);
         },
       );
-    }
-    catch(error){
-      console.log("error reading image file: ", error);
+    } catch (error) {
+      console.log('error reading image file: ', error);
     }
   };
 
   //start with calling event for 1 time.
-  useEffect(()=>{
+  useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardStatus(true);
     });
@@ -149,61 +157,101 @@ const AddEventScreen = () => {
       showSubscription.remove();
       hideSubscription.remove();
     };
-  },[]);
-  
+  }, []);
+
   return (
     <View style={styles.root}>
       <View style={styles.container}>
-        <Modal 
-          animationType='slide'
-          transparent={true}
-          visible={modalVisible}
-        >
+        <Modal animationType="slide" transparent={true} visible={modalVisible}>
           <View style={styles.modalContainer}>
             <View style={styles.modalView}>
               <Text style={styles.modalMessageText}>{modalMessage}</Text>
-              <Pressable onPress={()=>setModalVisible(false)}>
+              <Pressable onPress={() => setModalVisible(false)}>
                 <Text style={styles.modalCloseText}>Close</Text>
               </Pressable>
             </View>
           </View>
-
         </Modal>
-        <Logo hasBack={true} title='Create Event' onPress={onBackPressed}/>
+        <Logo hasBack={true} title="Create Event" onPress={onBackPressed} />
         <View style={styles.contentContainer}>
           <View style={styles.uploadBannerContainer}>
-            <Text style={styles.uploadBannerText}>Upload your event banner here.</Text>
+            <Text style={styles.uploadBannerText}>
+              Upload your event banner here.
+            </Text>
             <Pressable onPress={onBrowsePressed}>
               <Text style={styles.browseText}>Browse</Text>
             </Pressable>
           </View>
           <View style={styles.eventInfoContainer}>
             <ScrollView style={styles.eventInfoScrollView}>
-              <CustomInputField value={eventName} setValue={setEventName} title={'Event Name (' + (!eventName ? 0 : eventName.length) + '/30)'} editable={true} selectTextOnFocus={true} />
-              <CustomInputField value={eventDescription} setValue={setEventDescription} title={'Description (' + (!eventDescription ? 0 : eventDescription.length) + '/100)'} maxLength = {100} editable={true} selectTextOnFocus={true} type='descriptionField'/>
-              <StartEventTimePicker 
-                minDate={minDate} 
-                maxDate={maxDate} 
-                startTime={eventStartTime} 
-                title ={"Start Date/Time"} 
-                setStartTime = {setEventStartTime}/>
+              <CustomInputField
+                value={eventName}
+                setValue={setEventName}
+                title={
+                  'Event Name (' + (!eventName ? 0 : eventName.length) + '/30)'
+                }
+                editable={true}
+                selectTextOnFocus={true}
+              />
+              <CustomInputField
+                value={eventDescription}
+                setValue={setEventDescription}
+                title={
+                  'Description (' +
+                  (!eventDescription ? 0 : eventDescription.length) +
+                  '/100)'
+                }
+                maxLength={100}
+                editable={true}
+                selectTextOnFocus={true}
+                type="descriptionField"
+              />
+              <StartEventTimePicker
+                minDate={minDate}
+                maxDate={maxDate}
+                startTime={eventStartTime}
+                title={'Start Date/Time'}
+                setStartTime={setEventStartTime}
+              />
               <EndEventTimePicker
                 minDate={eventStartTime}
                 maxDate={maxDate}
                 endDateText={endDateText}
                 setEndDateText={setEndDateText}
                 setEndTime={setEventEndTime}
-                title={'End Date/Time'}/>
-              <CustomInputField value={eventLocation} setValue={setEventLocation} title={'Location (' + (!eventLocation ? 0 : eventLocation.length) + '/30)'} editable={true} selectTextOnFocus={true} />
-              <View style={keyBoardStatus ? (styles.bumpLastItemActive) : (styles.bumpLastItemInactive)}/> 
+                title={'End Date/Time'}
+              />
+              <CustomInputField
+                value={eventLocation}
+                setValue={setEventLocation}
+                title={
+                  'Location (' +
+                  (!eventLocation ? 0 : eventLocation.length) +
+                  '/30)'
+                }
+                editable={true}
+                selectTextOnFocus={true}
+              />
+              <View
+                style={
+                  keyBoardStatus
+                    ? styles.bumpLastItemActive
+                    : styles.bumpLastItemInactive
+                }
+              />
             </ScrollView>
           </View>
-         <View style={styles.buttonContainer}>
-          <CustomButton onPress={()=>{onCreatePressed(image)}} type="Add" text="Create" />
-         </View>
+          <View style={styles.buttonContainer}>
+            <CustomButton
+              onPress={() => {
+                onCreatePressed(image);
+              }}
+              type="Add"
+              text="Create"
+            />
+          </View>
         </View>
       </View>
-
     </View>
   );
 };
@@ -224,39 +272,39 @@ const styles = ScaledSheet.create({
     height: '100%',
     // backgroundColor:'green',
   },
-  contentContainer:{
+  contentContainer: {
     flexDirection: 'column',
     width: '100%',
     height: '91%',
     // backgroundColor:'yellow',
   },
-  uploadBannerContainer:{
-    flexDiretion:'column',
-    justifyContent:'center',
-    alignItems:'center',
+  uploadBannerContainer: {
+    flexDiretion: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
     width: '100%',
     height: '100@vs',
     borderRadius: '25@ms',
-    backgroundColor:'#EEEEEE',
+    backgroundColor: '#EEEEEE',
   },
-  uploadBannerText:{
-    fontFamily:'Inter-Regular',
-    fontSize:RFPercentage(2.25),
-    color:'black',
+  uploadBannerText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: RFPercentage(2.25),
+    color: 'black',
   },
-  browseText:{
-    fontFamily:'Inter-Regular',
-    fontSize:RFPercentage(2.25),
-    textDecorationLine:'underline',
-    color:'#FF3008',
+  browseText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: RFPercentage(2.25),
+    textDecorationLine: 'underline',
+    color: '#FF3008',
   },
-  eventInfoContainer:{
-    paddingTop:'20@vs',
-    width:'100%',
-    height:'376@vs',
+  eventInfoContainer: {
+    paddingTop: '20@vs',
+    width: '100%',
+    height: '376@vs',
   },
-  eventInfoScrollView:{
-    width:'100%',
+  eventInfoScrollView: {
+    width: '100%',
   },
   buttonContainer: {
     width: '100%',
@@ -265,41 +313,41 @@ const styles = ScaledSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  bumpLastItemActive:{
-    height:'120@vs',
+  bumpLastItemActive: {
+    height: '120@vs',
   },
-  bumpLastItemInactive:{
-    height:'10@vs',
+  bumpLastItemInactive: {
+    height: '10@vs',
   },
-  modalContainer:{
+  modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor:'rgba(0, 0, 0, 0.5)'
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  modalView:{
-    flexDirection:'column',
+  modalView: {
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    width:'92%',
-    height:'18%',
-    borderRadius:'10@ms',
-    backgroundColor:'white',
+    width: '92%',
+    height: '18%',
+    borderRadius: '10@ms',
+    backgroundColor: 'white',
   },
-  modalMessageText:{
-    textAlign:'center',
-    paddingHorizontal:'4%',
-    fontFamily:'Inter-Regular',
-    fontSize:RFPercentage(2.25),
-    color:'black',
-    marginVertical:'2%',
+  modalMessageText: {
+    textAlign: 'center',
+    paddingHorizontal: '4%',
+    fontFamily: 'Inter-Regular',
+    fontSize: RFPercentage(2.25),
+    color: 'black',
+    marginVertical: '2%',
   },
-  modalCloseText:{
-    textAlign:'center',
-    fontFamily:'Inter-Regular',
-    fontSize:RFPercentage(2),
-    color:'#FF3008',
-    marginVertical:'2%',
+  modalCloseText: {
+    textAlign: 'center',
+    fontFamily: 'Inter-Regular',
+    fontSize: RFPercentage(2),
+    color: '#FF3008',
+    marginVertical: '2%',
   },
 });
 
