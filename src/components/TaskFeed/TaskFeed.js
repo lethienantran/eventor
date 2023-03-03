@@ -112,7 +112,7 @@ const TaskFeed = props => {
           />
         );
       } else {
-        <Text style={styles.noTasksText}>There is no tasks.</Text>;
+        return(<Text style={styles.noTasksText}>There is no tasks.</Text>);
       }
     } else {
       return <Loading page={false} />;
