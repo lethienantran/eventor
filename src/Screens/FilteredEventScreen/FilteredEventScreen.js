@@ -40,8 +40,12 @@ import Loading from '../../components/Loading';
     navigation.navigate('AddEventScreen');
     
   };
-  const onEventPressed = async selectedEventID => {
+  //use when an event item is pressed to store selectedEventID into asyncstorage
+  const onEventPressed = selectedEventID => {
+    console.log('HomeScreen: Go to eventID - ' + selectedEventID);
+    navigation.navigate('EventDetailScreen', {eventID: selectedEventID});
   };
+  
     //run query
     useEffect(() => {
       if (isFocused) {
