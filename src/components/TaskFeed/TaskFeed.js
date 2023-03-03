@@ -1,24 +1,24 @@
 import {View, Text, Pressable, FlatList} from 'react-native';
 import React, {useEffect, useState} from 'react';
-import { ScaledSheet } from 'react-native-size-matters';
+import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import SQLite from 'react-native-sqlite-storage';
-import { useIsFocused } from '@react-navigation/native';
-
-const TaskFeed = (props) => {
-
+import {useIsFocused} from '@react-navigation/native';
+import Loading from '../../components/Loading';
+const TaskFeed = props => {
+  const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState([]);
   const isFocused = useIsFocused();
-  
+
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
-  
-  useEffect(() => {
-    if(isFocused){
 
+  useEffect(() => {
+    setIsLoading(true);
+    if (isFocused) {
       const db = SQLite.openDatabase(
         {
           name: 'eventorDB.db',
@@ -37,6 +37,7 @@ const TaskFeed = (props) => {
                 }
                 setData(temp);
                 console.log('TaskFeed: Database close.');
+                setIsLoading(false);
                 db.close();
               },
             );
@@ -47,7 +48,7 @@ const TaskFeed = (props) => {
         },
       );
     }
-  },[isFocused]);
+  }, [isFocused]);
 
   const listItemView = item => {
     return (
@@ -66,31 +67,58 @@ const TaskFeed = (props) => {
           )}
           <Text style={styles.taskName}>{item.taskName}</Text>
         </View>
-        <Pressable style={styles.taskEditButton} onPress={()=> onEditPressed(item.taskStatus, props.eventName, item.taskName, item.taskID, props.eventID)}>
+        <Pressable
+          style={styles.taskEditButton}
+          onPress={() =>
+            onEditPressed(
+              item.taskStatus,
+              props.eventName,
+              item.taskName,
+              item.taskID,
+              props.eventID,
+            )
+          }>
           <Feather name="edit-3" style={styles.editTaskIcon} />
         </Pressable>
       </View>
     );
   };
 
-  const onEditPressed = (selectedTaskStatus, selectedEventName, selectedTaskName, selectedTaskID, selectedEventID) => {
+  const onEditPressed = (
+    selectedTaskStatus,
+    selectedEventName,
+    selectedTaskName,
+    selectedTaskID,
+    selectedEventID,
+  ) => {
     console.log('TaskFeed: Go to EditTaskScreen');
-    navigation.navigate('EditTaskScreen', 
-                      {taskStatus: selectedTaskStatus, eventName: selectedEventName, taskName: selectedTaskName, taskID: selectedTaskID, eventID: selectedEventID});
+    navigation.navigate('EditTaskScreen', {
+      taskStatus: selectedTaskStatus,
+      eventName: selectedEventName,
+      taskName: selectedTaskName,
+      taskID: selectedTaskID,
+      eventID: selectedEventID,
+    });
   };
-
-  return (
-    <View style={styles.taskList}>
-      {(data.length !== 0) ? 
-      (<FlatList
-        showsVerticalScrollIndicator={false}
-        data={data}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({item}) => listItemView(item)}
-      />):
-      (<Text style={styles.noTasksText}>There is no tasks.</Text>)}
-  </View>
-  );
+  const display = () => {
+    if (!isLoading) {
+      if (data.length !== 0) {
+        return (
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            data={data}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({item}) => listItemView(item)}
+          />
+        );
+      } else {
+        <Text style={styles.noTasksText}>There is no tasks.</Text>;
+      }
+    } else {
+      return <Loading page={false} />;
+    }
+  };
+  return <View style={styles.taskList}>{display()}</View>;
 };
 
 const styles = ScaledSheet.create({
@@ -99,7 +127,7 @@ const styles = ScaledSheet.create({
     width: '100%',
     height: '38%',
     flexDirection: 'column',
-    justifyContent:'center',
+    justifyContent: 'center',
   },
   taskContainer: {
     marginVertical: '3.2%',
@@ -146,10 +174,10 @@ const styles = ScaledSheet.create({
     fontSize: RFPercentage(2.5),
     color: 'black',
   },
-  noTasksText:{
-    alignSelf:'center',
-    fontFamily:'Inter-Regular',
-    color:'#ABABAB',
+  noTasksText: {
+    alignSelf: 'center',
+    fontFamily: 'Inter-Regular',
+    color: '#ABABAB',
     fontSize: RFPercentage(2.25),
   },
 });

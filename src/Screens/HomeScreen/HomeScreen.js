@@ -243,12 +243,16 @@ const HomeScreen = () => {
             </View>
             {/* Display events from database*/}
             <View style={styles.feedContainer}>
-              <FlatList
-                showsVerticalScrollIndicator={false}
-                data={data}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({item}) => listItemView(item)}
-              />
+              {data.length !== 0 ? (
+                <FlatList
+                  showsVerticalScrollIndicator={false}
+                  data={data}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({item}) => listItemView(item)}
+                />
+              ) : (
+                <Text>There is no data.</Text>
+              )}
             </View>
           </View>
           {/* Add event button navigate to add event page*/}
