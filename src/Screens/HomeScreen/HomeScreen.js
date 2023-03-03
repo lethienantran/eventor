@@ -62,7 +62,7 @@ const HomeScreen = () => {
 
   //use when see all button is pressed, use to navigate to FilteredEventScreen screen
   const seeAllButtonPressed = () => {
-    navigation.navigate('FilteredEventScreen', {filterCase: 'All'});
+    navigation.navigate('FilteredEventScreen', {filterCases: 'All'});
   };
 
   //use when an event item is pressed to store selectedEventID into asyncstorage
@@ -97,7 +97,7 @@ const HomeScreen = () => {
     }
   };
   const onInProgressPressed = () => {
-    navigation.navigate('FilteredEventScreen', {filterCase: 'In-Progress'});
+    navigation.navigate('FilteredEventScreen', {filterCases: 'In-Progress'});
   };
   //run query, checkDay
   useEffect(() => {

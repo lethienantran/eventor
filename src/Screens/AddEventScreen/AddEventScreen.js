@@ -61,7 +61,7 @@ const AddEventScreen = () => {
   const [eventEndTime, setEventEndTime] = useState(new Date());
   const [endDateText, setEndDateText] = useState(eventStartTime);
 
-  const onCloseUploadedImage = () =>{
+  const onCloseUploadedImage = () => {
     setImage(null);
   };
 
@@ -91,7 +91,7 @@ const AddEventScreen = () => {
     const eventStartTimeStr = startIsoStr.replace('T', ' ');
 
     //convert eventEndTimeStr
-    const endTimeStamp = Date.parse(eventStartTime);
+    const endTimeStamp = Date.parse(eventEndTime);
     const endDateObj = new Date(endTimeStamp);
     const endIsoStr = endDateObj.toISOString();
     const eventEndTimeStr = endIsoStr.replace('T', ' ');
@@ -206,17 +206,18 @@ const AddEventScreen = () => {
                 </Pressable>
               </>
             ) : (
-              <View
-                style={{width: '100%', height: '100%'}}>
+              <View style={{width: '100%', height: '100%'}}>
                 <ImageBackground
                   source={{uri: image}}
                   style={styles.imageBackground}
                   resizeMode="cover"
                   imageStyle={styles.imageUpload}
-                  blurRadius={0}
-                >
+                  blurRadius={0}>
                   <Pressable onPress={onCloseUploadedImage}>
-                    <Inoicons name='close-circle' style={styles.closeImageIcon}/>
+                    <Inoicons
+                      name="close-circle"
+                      style={styles.closeImageIcon}
+                    />
                   </Pressable>
                 </ImageBackground>
               </View>
@@ -341,20 +342,20 @@ const styles = ScaledSheet.create({
     textDecorationLine: 'underline',
     color: '#FF3008',
   },
-  imageBackground:{
-    flex:1,
-    paddingTop:'5@vs',
-    paddingHorizontal:'8@ms', 
-    flexDirection:'row', 
-    justifyContent:'flex-end',
+  imageBackground: {
+    flex: 1,
+    paddingTop: '5@vs',
+    paddingHorizontal: '8@ms',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   imageUpload: {
     borderRadius: '25@ms',
     opacity: 0.5,
   },
-  closeImageIcon:{
-    fontSize:RFPercentage(3.5),
-    color:'black',
+  closeImageIcon: {
+    fontSize: RFPercentage(3.5),
+    color: 'black',
   },
   eventInfoContainer: {
     paddingTop: '20@vs',

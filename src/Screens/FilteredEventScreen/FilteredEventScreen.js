@@ -1,23 +1,23 @@
 import {View, Text, Pressable, FlatList, ImageBackground} from 'react-native';
-import React, { useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
-import { ScaledSheet } from 'react-native-size-matters';
+import {ScaledSheet} from 'react-native-size-matters';
 import Logo from '../../components/Logo';
 import ViewModeButton from '../../components/ViewModeButton';
-import { RFPercentage } from 'react-native-responsive-fontsize';
+import {RFPercentage} from 'react-native-responsive-fontsize';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import { useIsFocused } from '@react-navigation/native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import {useIsFocused} from '@react-navigation/native';
 import SQLite from 'react-native-sqlite-storage';
 import moment from 'moment';
 import Feather from 'react-native-vector-icons/Feather';
 import Loading from '../../components/Loading';
-  const FilteredEventScreen = () => {
-    const navigation = useNavigation();
-    const [data, setData] = useState([]);
-    const isFocused = useIsFocused();
-    const [isLoading, setIsLoading] = useState(true);
-    const [filterCase, setFilterCase] = useState('All');
+const FilteredEventScreen = ({route}) => {
+  const navigation = useNavigation();
+  const [data, setData] = useState([]);
+  const isFocused = useIsFocused();
+  const [isLoading, setIsLoading] = useState(true);
+  const [filterCase, setFilterCase] = useState(route.params.filterCases);
 
   const onAllPressed = () => {
     setFilterCase('All');
@@ -38,159 +38,191 @@ import Loading from '../../components/Loading';
 
   const addButtonPressed = () => {
     navigation.navigate('AddEventScreen');
-    
   };
   //use when an event item is pressed to store selectedEventID into asyncstorage
   const onEventPressed = selectedEventID => {
     console.log('HomeScreen: Go to eventID - ' + selectedEventID);
     navigation.navigate('EventDetailScreen', {eventID: selectedEventID});
   };
-  
-    //run query
-    useEffect(() => {
-      if (isFocused) {
-        setIsLoading(true);
-        const db = SQLite.openDatabase(
-          {
-            name: 'eventorDB.db',
-            createFromLocation: 1,
-          },
-          () => {
-            console.log('FilteredEventScreen: Database opened successfully');
-            db.transaction(tx => {
-              //for populating all event
-              tx.executeSql(
-                `SELECT * FROM events ORDER BY eventEndTime DESC`,
-                [],
-                (tx, results) => {
-                  var temp = [];
-                  for (let i = 0; i < results.rows.length; ++i) {
-                    temp.push(results.rows.item(i));
-                  }
-                  setData(temp);
-                  setIsLoading(false);
-                  db.close();
-                },
-              );
-            });
-          },
-          error => {
-            console.log(error);
-          },
-        );
-      }
-    }, [isFocused]);
 
-    //listItemView for FlatList (item/cards) show on screen
-    const listItemView = item => {
-      //format dateTime
-      const eventStartTime = moment(new Date(item.eventStartTime)).format(
-        'MM/DD/YYYY HH:mm',
+  const filterEvents = data.filter(events => {
+    if (filterCase === 'All') {
+      return true;
+    } else if (filterCase === 'Complete') {
+      return events.eventProgress === 100;
+    } else if (filterCase === 'In-Progress') {
+      return events.eventProgress != 100;
+    } else {
+      const now = new Date();
+      events.eventEndTime = new Date(events.eventEndTime);
+      return events.eventEndTime < now;
+    }
+  });
+  //run query
+  useEffect(() => {
+    if (isFocused) {
+      setIsLoading(true);
+      const db = SQLite.openDatabase(
+        {
+          name: 'eventorDB.db',
+          createFromLocation: 1,
+        },
+        () => {
+          console.log('FilteredEventScreen: Database opened successfully');
+          db.transaction(tx => {
+            //for populating all event
+            tx.executeSql(
+              `SELECT * FROM events ORDER BY eventEndTime DESC`,
+              [],
+              (tx, results) => {
+                var temp = [];
+                for (let i = 0; i < results.rows.length; ++i) {
+                  temp.push(results.rows.item(i));
+                }
+                setData(temp);
+                setIsLoading(false);
+                db.close();
+              },
+            );
+          });
+        },
+        error => {
+          console.log(error);
+        },
       );
-      const eventEndTime = moment(new Date(item.eventEndTime)).format(
-        'MM/DD/YYYY HH:mm',
-      );
-      return (
-        <TouchableOpacity
-          key={item.eventID}
-          style={styles.feedItem}
-          activeOpacity={0.7}
-          onPress={() => onEventPressed(item.eventID)}>
-          <ImageBackground
-            source={
-              item.eventImage !== null
-                ? {uri: `data:image/jpeg;base64,${item.eventImage}`}
-                : require('../../../assets/images/eventsBanner.png')
-            }
-            resizeMode="cover"
-            style={{flex: 1}}
-            imageStyle={styles.itemImage}
-            blurRadius={5}>
-            <View style={styles.dateTimeContainer}>
-              <Text style={styles.dateTimeText}>
-                {eventStartTime} - {eventEndTime}
-              </Text>
-            </View>
-            <View style={styles.titleItemContainer}>
-              <Text style={styles.titleItemText}>{item.eventName}</Text>
-            </View>
-            <View style={styles.progressionItemContainer}>
-              <Text style={styles.progressionItemText}>Progress:</Text>
-              <Text style={styles.displayProgressionItemText}>
-                {item.eventProgress}%
-              </Text>
-            </View>
-          </ImageBackground>
-        </TouchableOpacity>
-      );
-    };
+    }
+  }, [isFocused]);
+
+  //listItemView for FlatList (item/cards) show on screen
+  const listItemView = item => {
+    //format dateTime
+    const eventStartTime = moment(new Date(item.eventStartTime)).format(
+      'MM/DD/YYYY HH:mm',
+    );
+    const eventEndTime = moment(new Date(item.eventEndTime)).format(
+      'MM/DD/YYYY HH:mm',
+    );
+    return (
+      <TouchableOpacity
+        key={item.eventID}
+        style={styles.feedItem}
+        activeOpacity={0.7}
+        onPress={() => onEventPressed(item.eventID)}>
+        <ImageBackground
+          source={
+            item.eventImage !== null
+              ? {uri: `data:image/jpeg;base64,${item.eventImage}`}
+              : require('../../../assets/images/eventsBanner.png')
+          }
+          resizeMode="cover"
+          style={{flex: 1}}
+          imageStyle={styles.itemImage}
+          blurRadius={5}>
+          <View style={styles.dateTimeContainer}>
+            <Text style={styles.dateTimeText}>
+              {eventStartTime} - {eventEndTime}
+            </Text>
+          </View>
+          <View style={styles.titleItemContainer}>
+            <Text style={styles.titleItemText}>{item.eventName}</Text>
+          </View>
+          <View style={styles.progressionItemContainer}>
+            <Text style={styles.progressionItemText}>Progress:</Text>
+            <Text style={styles.displayProgressionItemText}>
+              {item.eventProgress}%
+            </Text>
+          </View>
+        </ImageBackground>
+      </TouchableOpacity>
+    );
+  };
 
   const display = () => {
-    if(!isLoading)
-    {
-      return(
+    if (!isLoading) {
+      return (
         <>
           <View style={styles.container}>
-            <Logo hasBack={true} onPress={onBackPressed}/>
+            <Logo hasBack={true} onPress={onBackPressed} />
             <View style={styles.contentContainer}>
               <View style={styles.viewModeContainer}>
-                <ViewModeButton mode='All' viewMode={filterCase} title='All' type='EvenSpace' onPress={onAllPressed}/>
-                <ViewModeButton mode='Past' viewMode={filterCase} title='Past' type='EvenSpace' onPress={onPastPressed}/>
+                <ViewModeButton
+                  mode="All"
+                  viewMode={filterCase}
+                  title="All"
+                  type="EvenSpace"
+                  onPress={onAllPressed}
+                />
+                <ViewModeButton
+                  mode="Past"
+                  viewMode={filterCase}
+                  title="Past"
+                  type="EvenSpace"
+                  onPress={onPastPressed}
+                />
               </View>
               <View style={styles.viewModeContainer}>
-                <ViewModeButton mode='Complete' viewMode={filterCase} title='Complete' type='EvenSpace' onPress={onCompletePressed}/>
-                <ViewModeButton mode='In-Progress' viewMode={filterCase} title='In-Progress' type='EvenSpace' onPress={onInProgressPressed}/>
+                <ViewModeButton
+                  mode="Complete"
+                  viewMode={filterCase}
+                  title="Complete"
+                  type="EvenSpace"
+                  onPress={onCompletePressed}
+                />
+                <ViewModeButton
+                  mode="In-Progress"
+                  viewMode={filterCase}
+                  title="In-Progress"
+                  type="EvenSpace"
+                  onPress={onInProgressPressed}
+                />
               </View>
               <View style={styles.viewTitleContainer}>
                 <Text style={styles.viewTitleText}>{filterCase} Events</Text>
               </View>
-              <View style = {styles.feedContainer}>
-              {data.length != 0 ? (
+              <View style={styles.feedContainer}>
+                {data.length != 0 ? (
                   <FlatList
                     showsVerticalScrollIndicator={false}
-                    data={data}
+                    data={filterEvents}
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({item}) => listItemView(item)}
                   />
                 ) : (
-                  <View style = {styles.noEventOutsideContainer}>
-                  <View style={styles.noEventContainer}>
-                    <Feather name='check-circle' style={styles.checkCircleIcon}/>
-                    <Text style = {styles.noEventText}>You don't have any events yet!</Text>
-                  </View>
+                  <View style={styles.noEventOutsideContainer}>
+                    <View style={styles.noEventContainer}>
+                      <Feather
+                        name="check-circle"
+                        style={styles.checkCircleIcon}
+                      />
+                      <Text style={styles.noEventText}>
+                        You don't have any events yet!
+                      </Text>
+                    </View>
                   </View>
                 )}
               </View>
+            </View>
           </View>
-        </View>
-        <View style = {styles.addButtonIcon}>
-          <Pressable onPress={addButtonPressed}>
-            <MaterialCommunityIcons
-              name="plus-circle"
-              color={'#FF3008'}
-              size = {100}
-            />
-          </Pressable>
-        </View>
+          <View style={styles.addButtonIcon}>
+            <Pressable onPress={addButtonPressed}>
+              <MaterialCommunityIcons
+                name="plus-circle"
+                color={'#FF3008'}
+                size={100}
+              />
+            </Pressable>
+          </View>
         </>
-      )
+      );
+    } else {
+      return <Loading />;
     }
-    else
-    {
-      return(
-        <Loading />
-      )
-    }
-  }
-  return (
-      <View style={styles.root}>
-        {display()}
-      </View>
-    );
   };
+  return <View style={styles.root}>{display()}</View>;
+};
 
 const styles = ScaledSheet.create({
-  root:{
+  root: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -215,17 +247,16 @@ const styles = ScaledSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  viewTitleContainer:{
-    width:'100%',
-    height:'7%',
+  viewTitleContainer: {
+    width: '100%',
+    height: '7%',
     flexDirection: 'column',
     justifyContent: 'center',
-
   },
-  viewTitleText:{
-    fontFamily:'OpenSans-SemiBold',
-    fontSize:RFPercentage(3.8),
-    color:'black',
+  viewTitleText: {
+    fontFamily: 'OpenSans-SemiBold',
+    fontSize: RFPercentage(3.8),
+    color: 'black',
   },
   addButtonIcon: {
     fontSize: RFPercentage(13.5),
@@ -295,29 +326,29 @@ const styles = ScaledSheet.create({
     color: 'white',
     fontSize: RFPercentage(1.8),
   },
-  noEventOutsideContainer:{
-    width:"100%",
-    height:"100%",
-    justifyContent:"center",
-    alignItems:"center",
+  noEventOutsideContainer: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  noEventContainer:{
-    width:"85%",
-    height:"100%",
-    justifyContent:"center",
-    alignItems:"center",
+  noEventContainer: {
+    width: '85%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  checkCircleIcon:{
-    fontSize:RFPercentage(8),
-    color:'#21B608',
-    alignSelf:'center',
-    marginBottom:"4@vs",
+  checkCircleIcon: {
+    fontSize: RFPercentage(8),
+    color: '#21B608',
+    alignSelf: 'center',
+    marginBottom: '4@vs',
   },
-  noEventText:{
-    fontFamily:"OpenSans-Regular",
-    fontSize:RFPercentage(2.5),
-    color:"black",
-  }
+  noEventText: {
+    fontFamily: 'OpenSans-Regular',
+    fontSize: RFPercentage(2.5),
+    color: 'black',
+  },
 });
 
 export default FilteredEventScreen;
