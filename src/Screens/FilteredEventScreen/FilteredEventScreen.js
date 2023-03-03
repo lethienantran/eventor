@@ -347,7 +347,7 @@ const styles = ScaledSheet.create({
   noEventText: {
     fontFamily: 'OpenSans-Regular',
     fontSize: RFPercentage(2.5),
-    color: 'black',
+    color: '#ABABAB',
   },
 });
 
