@@ -14,8 +14,10 @@ import {useIsFocused} from '@react-navigation/native';
 import Loading from '../../components/Loading';
 import Feather from 'react-native-vector-icons/Feather';
 const HomeScreen = () => {
+  //isLoading and setIsLoading useState for loading screen if database is still loading
   const [isLoading, setIsLoading] = useState(true);
 
+  //for checking if user is currently at this screen
   const isFocused = useIsFocused();
 
   //call useNavigation to be able to navigate around
@@ -29,8 +31,18 @@ const HomeScreen = () => {
 
   //quote and set quote useState for calendar
   const [quote, setQuote] = useState('');
+
   //theDayOfWeek and setTheDayOfWeek for calendar
   const [theDayOfWeek, setTheDayOfWeek] = useState('');
+
+  // Get the current date
+  const today = new Date();
+
+  // Get the day of the week (0-6, where 0 is Sunday and 6 is Saturday)
+  const dayOfWeek = today.getDay();
+
+  //Get the day of the month (1-31)
+  const dayOfMonth = today.getDate();
 
   //quotes for calendar to be display everyday
   const quoteArray = [
@@ -42,13 +54,6 @@ const HomeScreen = () => {
     '"Thank God! \n It is weekend."',
     '"Saturday is a day \n for relaxation \n  and family"',
   ];
-
-  // Get the current date
-  const today = new Date();
-  // Get the day of the week (0-6, where 0 is Sunday and 6 is Saturday)
-  const dayOfWeek = today.getDay();
-  //Get the day of the month (1-31)
-  const dayOfMonth = today.getDate();
 
   //use when add button is pressed, use to navigate to AddEventScreen screen
   const addButtonPressed = () => {
@@ -67,7 +72,7 @@ const HomeScreen = () => {
   };
 
   //checkDay to display on Screen
-  const checkDay = () => {
+  const setDayAndQuoteForCalendar = () => {
     if (dayOfWeek === 0) {
       setQuote(quoteArray[0]);
       setTheDayOfWeek('SUNDAY');
@@ -92,11 +97,15 @@ const HomeScreen = () => {
     }
   };
 
-  //run query, checkDay
+  //run query, checkDay, openDB - use Loading Components, closeDB - not use Loading Component
   useEffect(() => {
-    checkDay();
+    //set day and quote for calendar when app loads up
+    setDayAndQuoteForCalendar();
+    //if screen is focus, open db - use Loading Component, closeDB - not use Loading Component
     if (isFocused) {
+      //set isLoading to true first, because we want to use the Loading Components while db is open and load up data
       setIsLoading(true);
+      //open sqlite database
       const db = SQLite.openDatabase(
         {
           name: 'eventorDB.db',
@@ -104,39 +113,73 @@ const HomeScreen = () => {
         },
         () => {
           console.log('HomeScreen: Database opened successfully');
+          //open the transaction
           db.transaction(tx => {
-            //TODO: CHANGE THIS TO UPCOMING INPROGRESS EVENT QUERY ORDER BY eventStartTime
-            //for populating in progress event
+            //get all current in progress event and order by the most recent upcoming event
             tx.executeSql(
+              //query
               `SELECT * FROM events WHERE eventProgress < 100 AND eventEndTime >= strftime('%Y-%m-%d %H-%M','now') ORDER BY eventStartTime ASC`,
+              //nothing to pass in the arguments
               [],
+              //if successfully get data then set data = that results by using a temp array
               (tx, results) => {
+                //intiallize temporary array so that we can set it to data array
                 var temp = [];
+                //loop all of the results row and push it into temp array
                 for (let i = 0; i < results.rows.length; ++i) {
                   temp.push(results.rows.item(i));
                 }
+                //setData (set data array) to temp
                 setData(temp);
               },
+              //if not successfully get data, then print out error
+              error => {
+                console.log(
+                  'Error in HomeScreen while get all current in-progress event and order by the most recent upcoming event, error: ' +
+                    error,
+                );
+              },
             );
-            //for display totalEvent
+            //get total events that users have
             tx.executeSql(
+              //query
               'SELECT COUNT(*) as count FROM events',
+              //nothing to pass in the argument
               [],
+              /*if successfully get total events that users have then set a count variable to setTotalEvent 
+              so that totalEvent can have value of total event user currently have*/
               (tx, results) => {
+                //count variable which is equal to the total rows of results from the query
                 const count = results.rows.item(0).count;
+                //setTotalEvent equal to count
                 setTotalEvent(count);
-                console.log('HomeScreen: Database closed.');
+                //after finish all of the database population, we set isLoading back to false, so that it can display HomeScreen to users
                 setIsLoading(false);
+                //print to notice that database is close
+                console.log('HomeScreen: Database closed.');
+                //close database, we have to put it after all, because once db is close, all of the other code inside db transaction is stopped.
                 db.close();
+              },
+              /*if not successfully get total events that user have then there should be an error in the query or database
+              so we print out the data */
+              error => {
+                console.log(
+                  "Error in HomeScreen while get total events that user has, query 'SELECT COUNT(*)', error: " +
+                    error,
+                );
               },
             );
           });
         },
+        //if there is error when open database (such as no database) then print the error
         error => {
           console.log(error);
         },
       );
     }
+    /*
+      isFocused: we want to render everytime isFocused is changed, so that all data should be up to date
+    */
   }, [isFocused]);
 
   //listItemView for FlatList (item/cards) show on screen
@@ -148,12 +191,15 @@ const HomeScreen = () => {
     const eventEndTime = moment(new Date(item.eventEndTime)).format(
       'MM/DD/YYYY HH:mm',
     );
+    //render/return View
     return (
+      //In order to do opacity change on touch/press
       <TouchableOpacity
         key={item.eventID}
         style={styles.feedItem}
         activeOpacity={0.7}
         onPress={() => onEventPressed(item.eventID)}>
+        {/* Image Background for each item of flatList, if eventImage != null then we use eventImage in database, else we use broken image*/}
         <ImageBackground
           source={
             item.eventImage !== null
@@ -164,12 +210,16 @@ const HomeScreen = () => {
           style={{flex: 1}}
           imageStyle={styles.itemImage}
           blurRadius={5}>
+          {/* container for dateTime inside the imageBackground/the itemContainer of the item in flatlist, iykyk haha*/}
           <View style={styles.dateTimeContainer}>
+            {/* Text is set to be starTime - endTime*/}
             <Text style={styles.dateTimeText}>
               {eventStartTime} - {eventEndTime}
             </Text>
           </View>
+          {/* name of the event inside of the imageBackground/the itemContainer of the item in flatlist, iykyk haha*/}
           <View style={styles.titleItemContainer}>
+            {/* Text is set to be the name of the event which we take from that item data*/}
             <Text style={styles.titleItemText}>{item.eventName}</Text>
           </View>
           <View style={styles.progressionItemContainer}>
@@ -252,8 +302,10 @@ const HomeScreen = () => {
                 />
               ) : (
                 <>
-                  <Feather name='check-circle' style={styles.checkCircleIcon}/>
-                  <Text style={styles.noInProgressEventText}>Looks like you are up to date!</Text>
+                  <Feather name="check-circle" style={styles.checkCircleIcon} />
+                  <Text style={styles.noInProgressEventText}>
+                    Looks like you are up to date!
+                  </Text>
                 </>
               )}
             </View>
@@ -439,8 +491,8 @@ const styles = ScaledSheet.create({
   feedContainer: {
     width: '100%',
     height: '40%',
-    flexDirection:'column',
-    justifyContent:'center',
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
   feedItem: {
     alignSelf: 'center',
@@ -450,17 +502,17 @@ const styles = ScaledSheet.create({
     backgroundColor: '#777B7E',
     borderRadius: '25@ms',
   },
-  checkCircleIcon:{
-    fontSize:RFPercentage(10),
-    color:'#21B608',
-    alignSelf:'center',
+  checkCircleIcon: {
+    fontSize: RFPercentage(10),
+    color: '#21B608',
+    alignSelf: 'center',
   },
-  noInProgressEventText:{
-    fontFamily:'Inter-Regular',
-    fontSize:RFPercentage(2.25),
-    color:'#ABABAB',
-    marginVertical:'2%',
-    alignSelf:'center',
+  noInProgressEventText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: RFPercentage(2.25),
+    color: '#ABABAB',
+    marginVertical: '2%',
+    alignSelf: 'center',
   },
   itemImage: {
     borderRadius: '25@ms',
