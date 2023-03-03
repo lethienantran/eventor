@@ -88,7 +88,7 @@ const TaskFeed = (props) => {
         keyExtractor={(item, index) => index.toString()}
         renderItem={({item}) => listItemView(item)}
       />):
-      (<Text style={{alignSelf:'center'}}>There is no tasks.</Text>)}
+      (<Text style={styles.noTasksText}>There is no tasks.</Text>)}
   </View>
   );
 };
@@ -145,6 +145,12 @@ const styles = ScaledSheet.create({
   editTaskIcon: {
     fontSize: RFPercentage(2.5),
     color: 'black',
+  },
+  noTasksText:{
+    alignSelf:'center',
+    fontFamily:'Inter-Regular',
+    color:'#ABABAB',
+    fontSize: RFPercentage(2.25),
   },
 });
 export default TaskFeed;
