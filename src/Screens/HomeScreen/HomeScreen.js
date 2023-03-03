@@ -1,18 +1,23 @@
+//Components and Responsive
 import {View, Text, Pressable, ImageBackground, FlatList} from 'react-native';
+import Loading from '../../components/Loading';
+import Logo from '../../components/Logo';
 import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
+//Hooks and function
 import React, {useState, useEffect} from 'react';
+import moment from 'moment';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import {useNavigation} from '@react-navigation/native';
+import {useIsFocused} from '@react-navigation/native';
+//Database
+import SQLite from 'react-native-sqlite-storage';
+//Icons
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useNavigation} from '@react-navigation/native';
-import moment from 'moment';
-import Logo from '../../components/Logo';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import SQLite from 'react-native-sqlite-storage';
-import {useIsFocused} from '@react-navigation/native';
-import Loading from '../../components/Loading';
 import Feather from 'react-native-vector-icons/Feather';
+
 const HomeScreen = () => {
   //isLoading and setIsLoading useState for loading screen if database is still loading
   const [isLoading, setIsLoading] = useState(true);
@@ -71,6 +76,11 @@ const HomeScreen = () => {
     navigation.navigate('EventDetailScreen', {eventID: selectedEventID});
   };
 
+  //if InProgress button is pressed, then we navigate to FiteredEventScreen with parameter filterCases
+  const onInProgressPressed = () => {
+    navigation.navigate('FilteredEventScreen', {filterCases: 'In-Progress'});
+  };
+
   //checkDay to display on Screen
   const setDayAndQuoteForCalendar = () => {
     if (dayOfWeek === 0) {
@@ -96,9 +106,7 @@ const HomeScreen = () => {
       setTheDayOfWeek('SATURDAY');
     }
   };
-  const onInProgressPressed = () => {
-    navigation.navigate('FilteredEventScreen', {filterCases: 'In-Progress'});
-  };
+
   //run query, checkDay
   useEffect(() => {
     //set day and quote for calendar when app loads up
@@ -224,8 +232,11 @@ const HomeScreen = () => {
             {/* Text is set to be the name of the event which we take from that item data*/}
             <Text style={styles.titleItemText}>{item.eventName}</Text>
           </View>
+          {/* the progress of the event inside of the imageBackground/the itemContainer of the item in flatlist, iykyk haha*/}
           <View style={styles.progressionItemContainer}>
+            {/* Static "Progress" text title */}
             <Text style={styles.progressionItemText}>Progress:</Text>
+            {/* Text is set to be the eventProgress to the screen such as Progress: 69% */}
             <Text style={styles.displayProgressionItemText}>
               {item.eventProgress}%
             </Text>
@@ -234,9 +245,14 @@ const HomeScreen = () => {
       </TouchableOpacity>
     );
   };
-
+  {
+    /* this function is use for rendering the page based on isLoading state, if isLoading = true then we use Loading components and 
+      if isLoading = false then we display the HomeScreen UI */
+  }
   const display = () => {
+    //check if it still loading, if it is not loading anymore then we return display HomeScreen UI
     if (!isLoading) {
+      //return/display HomeScreen UI
       return (
         <>
           <Logo />
@@ -244,25 +260,36 @@ const HomeScreen = () => {
           <View style={styles.content}>
             {/* first half content of page - calendar, see all button, total events display */}
             <View style={styles.detailContainer}>
-              {/* calendar */}
+              {/* calendar View inside the detail container that contains calendar */}
               <View style={styles.calendarContainer}>
+                {/* The date container inside the calendar view */}
                 <View style={styles.dayContainer}>
+                  {/* Text will be the day of the week such as Tuesday */}
                   <Text style={styles.dayText}>{theDayOfWeek}</Text>
+                  {/* Text will be the day of the month 1-31 or 1-30*/}
                   <Text style={styles.dateText}>{dayOfMonth}</Text>
                 </View>
+                {/* The quote container inside the calendar view */}
                 <View style={styles.quoteContainer}>
+                  {/* displaying quote depends on the day of the week */}
                   <Text style={styles.quoteText}>{quote}</Text>
                 </View>
               </View>
-              {/* see all and total Events display */}
+              {/* View inside the detail Container that contains see all button and total Events display */}
               <View style={styles.statsContainer}>
+                {/* This is a pressable See All button that when you touch on the button, it will launch SeeAllButtonPressed function, 
+                    it has view of the text and the view of the icon */}
                 <Pressable
                   onPress={seeAllButtonPressed}
                   style={styles.seeAllContainer}>
+                  {/* SeeAll view that has See All Text inside  */}
                   <View style={styles.seeAllTextContainer}>
+                    {/* Text should be see all */}
                     <Text style={styles.seeAllText}>See All</Text>
                   </View>
+                  {/* View of the Icon to display icon inside*/}
                   <View style={styles.seeAllIconContainer}>
+                    {/* display icon */}
                     <FontAwesome5
                       name="arrow-right"
                       style={styles.rightArrowIcon}
@@ -270,21 +297,30 @@ const HomeScreen = () => {
                     />
                   </View>
                 </Pressable>
-
+                {/* Container of the totalEvent display, text is placed separately instead of using \n */}
                 <View style={styles.totalEventContainer}>
+                  {/* Text: Total */}
                   <Text style={styles.totalText}>Total</Text>
+                  {/* Text: Events: */}
                   <Text style={styles.eventText}>Events:</Text>
+                  {/* Text: total of the event (eg. 52) */}
                   <Text style={styles.numberTotalText}>{totalEvent}</Text>
                 </View>
               </View>
             </View>
-            {/* In Progress Title */}
+            {/* Container of In Progress Title */}
             <View style={styles.inProgressTitleContainer}>
+              {/* Container of the text "Current In-Progress" */}
               <View style={styles.inProgressTextContainer}>
+                {/* Text: Current In-Progress */}
                 <Text style={styles.inProgressText}> Current In-Progress </Text>
               </View>
+              {/* Container of the icon inside the inProgressTitleContainer */}
               <View style={styles.inProgressIconContainer}>
+                {/* This is a pressable In Progress button that when you touch on the button, it will launch onInProgressPressed function, 
+                    it has view of the icon */}
                 <Pressable>
+                  {/* Icon: Angle-Right from FontAwesome */}
                   <FontAwesome
                     name="angle-right"
                     style={styles.inProgressIcon}
@@ -296,6 +332,7 @@ const HomeScreen = () => {
             </View>
             {/* Display events from database*/}
             <View style={styles.feedContainer}>
+              {/* if we have data, then return a flatlist of the item in data, if not then we return up to date text for the user to know */}
               {data.length !== 0 ? (
                 <FlatList
                   showsVerticalScrollIndicator={false}
@@ -313,8 +350,9 @@ const HomeScreen = () => {
               )}
             </View>
           </View>
-          {/* Add event button navigate to add event page*/}
+          {/* An Add Event that when you touch on the button, a function addButtonPressed is launched, it has the icon in it*/}
           <Pressable onPress={addButtonPressed}>
+            {/* Icon: Plus-Circle from MaterialCommunityIcons*/}
             <MaterialCommunityIcons
               name="plus-circle"
               style={styles.addButtonIcon}
@@ -323,23 +361,32 @@ const HomeScreen = () => {
           </Pressable>
         </>
       );
-    } else {
+    }
+    //if the page is still Loading then return Loading Component.
+    else {
       return <Loading />;
     }
   };
-  return <View style={styles.root}>{display()}</View>;
+  return (
+    <View style={styles.root}>
+      {/* call function display to render the page's content properly */}
+      {display()}
+    </View>
+  );
 };
 const styles = ScaledSheet.create({
+  //root of the page contains the content view of the page
   root: {
     width: '100%',
     height: '100%',
     backgroundColor: 'white',
   },
-
+  //content of the page, contains all of the view of the page except root
   content: {
     width: '99%',
     height: '91%',
   },
+  //addButton
   addButtonIcon: {
     fontSize: RFPercentage(13.5),
     marginRight: '5@ms',
@@ -351,12 +398,15 @@ const styles = ScaledSheet.create({
     borderWidth: 1,
     right: '20@ms',
   },
+
+  //detailContainer - the first half of the page content: Calendar, See All Button, and Total Events display
   detailContainer: {
     width: '100%',
     height: '39%',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  //calendarContainer - the calendar view contains: dayContainer, quoteContainer
   calendarContainer: {
     width: '45%',
     height: '100%',
@@ -367,6 +417,7 @@ const styles = ScaledSheet.create({
     borderRadius: 20,
     flexDirection: 'column',
   },
+  //dayContainer contains: dayText and dateText
   dayContainer: {
     width: '100%',
     height: '60%',
@@ -384,10 +435,10 @@ const styles = ScaledSheet.create({
     color: 'black',
     marginLeft: '12@ms',
   },
+  //quoteContainer contains: quoteText
   quoteContainer: {
     width: '100%',
     height: '40%',
-    // backgroundColor:'green',
     flexDirection: 'column',
     justifyContent: 'flex-end',
   },
@@ -402,12 +453,14 @@ const styles = ScaledSheet.create({
     color: 'black',
     fontSize: RFPercentage(2.25),
   },
+  //StatsContainer contains: See All Container, TotalEventContainer
   statsContainer: {
     width: '40%',
     height: '100%',
     marginRight: '20@ms',
     flexDirection: 'column',
   },
+  //SeeAllContainer contains: seeAllTextContainer, SeeAllIconContainer
   seeAllContainer: {
     width: '100%',
     height: '30%',
@@ -415,6 +468,7 @@ const styles = ScaledSheet.create({
     borderRadius: '20@ms',
     flexDirection: 'row',
   },
+  //SeeAllTextContainer contains: seeAllText
   seeAllTextContainer: {
     width: '75%',
     height: '100%',
@@ -427,6 +481,7 @@ const styles = ScaledSheet.create({
     marginLeft: '20@ms',
     marginBottom: '5@vs',
   },
+  //SeeAllIconContainer contains: rightArrowIcon
   seeAllIconContainer: {
     width: '25%',
     height: '100%',
@@ -437,6 +492,7 @@ const styles = ScaledSheet.create({
     marginBottom: '2@vs',
     marginLeft: '4@ms',
   },
+  //totalEventContainer contains: totalText, eventText and numberTotalText
   totalEventContainer: {
     width: '100%',
     height: '70%',
@@ -461,12 +517,14 @@ const styles = ScaledSheet.create({
     marginLeft: '4@ms',
     color: '#FF3008',
   },
+  //InProgressTitleContainer contains: inProgressTextContainer and inProgressIconContainer
   inProgressTitleContainer: {
     width: '100%',
     height: '10%',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  //inProgressTextContainer contains: inProgressText
   inProgressTextContainer: {
     width: '86%',
     height: '100%',
@@ -480,6 +538,7 @@ const styles = ScaledSheet.create({
     color: 'black',
     fontFamily: 'OpenSans-SemiBold',
   },
+  //inProgressIconContainer contains: inProgressIcon
   inProgressIconContainer: {
     width: '14%',
     height: '100%',
@@ -491,6 +550,7 @@ const styles = ScaledSheet.create({
     marginTop: '8@vs',
     marginLeft: '19@ms',
   },
+  //feedContainer contains: feedItem (container) and for flatList item styling
   feedContainer: {
     width: '100%',
     height: '40%',
