@@ -12,7 +12,7 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import SQLite from 'react-native-sqlite-storage';
 import {useIsFocused} from '@react-navigation/native';
 import Loading from '../../components/Loading';
-
+import Feather from 'react-native-vector-icons/Feather';
 const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -251,7 +251,10 @@ const HomeScreen = () => {
                   renderItem={({item}) => listItemView(item)}
                 />
               ) : (
-                <Text>There is no data.</Text>
+                <>
+                  <Feather name='check-circle' style={styles.checkCircleIcon}/>
+                  <Text style={styles.noInProgressEventText}>Looks like you are up to date!</Text>
+                </>
               )}
             </View>
           </View>
@@ -436,6 +439,8 @@ const styles = ScaledSheet.create({
   feedContainer: {
     width: '100%',
     height: '40%',
+    flexDirection:'column',
+    justifyContent:'center',
   },
   feedItem: {
     alignSelf: 'center',
@@ -444,6 +449,18 @@ const styles = ScaledSheet.create({
     height: '95@vs',
     backgroundColor: '#777B7E',
     borderRadius: '25@ms',
+  },
+  checkCircleIcon:{
+    fontSize:RFPercentage(10),
+    color:'#21B608',
+    alignSelf:'center',
+  },
+  noInProgressEventText:{
+    fontFamily:'Inter-Regular',
+    fontSize:RFPercentage(2.25),
+    color:'#ABABAB',
+    marginVertical:'2%',
+    alignSelf:'center',
   },
   itemImage: {
     borderRadius: '25@ms',
