@@ -1,10 +1,4 @@
-import {
-  View,
-  Text,
-  Pressable,
-  ImageBackground,
-  ScrollView,
-} from 'react-native';
+import {View, Text, Pressable, ImageBackground, ScrollView} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import Octicons from 'react-native-vector-icons/Octicons';
@@ -16,10 +10,11 @@ import Logo from '../../components/Logo';
 import TaskFeed from '../../components/TaskFeed';
 import ViewModeButton from '../../components/ViewModeButton';
 import SQLite from 'react-native-sqlite-storage';
-import { useIsFocused } from '@react-navigation/native';
+import {useIsFocused} from '@react-navigation/native';
+import Loading from '../../components/Loading';
 
 const EventDetailScreen = ({route}) => {
-
+  const [isLoading, setIsLoading] = useState(true);
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
 
@@ -35,11 +30,13 @@ const EventDetailScreen = ({route}) => {
   const [viewMode, setViewMode] = useState('description');
   const [eventImage, setEventImage] = useState();
 
-  const [currentSelectedEventID, setCurrentSelectedEventID] = useState(route.params.eventID);
+  const [currentSelectedEventID, setCurrentSelectedEventID] = useState(
+    route.params.eventID,
+  );
 
   useEffect(() => {
-    if(isFocused){
-
+    if (isFocused) {
+      setIsLoading(true);
       const db = SQLite.openDatabase(
         {
           name: 'eventorDB.db',
@@ -59,7 +56,8 @@ const EventDetailScreen = ({route}) => {
                 setEventImage(results.rows.item(0).eventImage);
                 setEventStartTime(results.rows.item(0).eventStartTime);
                 setEventEndTime(results.rows.item(0).eventEndTime);
-                console.log('EventDetailScreen: Database close.')
+                console.log('EventDetailScreen: Database close.');
+                setIsLoading(false);
                 db.close();
               },
             );
@@ -70,7 +68,7 @@ const EventDetailScreen = ({route}) => {
         },
       );
     }
-  },[isFocused]);
+  }, [isFocused]);
 
   const onBackPressed = () => {
     console.log('EventDetailScreen: Go Back.');
@@ -78,14 +76,32 @@ const EventDetailScreen = ({route}) => {
   };
 
   //on edit press go to editeventscreen with parameters.
-  const onEditPress = (selectedEventID, selectedEventImage, selectedEventName, selectedEventDescription, selectedEventStartTime, selectedEventEndTime, selectedEventLocation) => {
-    navigation.navigate('EditEventScreen', 
-    {eventID: selectedEventID, eventImage: selectedEventImage, eventName: selectedEventName, eventDescription: selectedEventDescription, eventStartTime: selectedEventStartTime, eventEndTime: selectedEventEndTime, eventLocation: selectedEventLocation});
-  }
+  const onEditPress = (
+    selectedEventID,
+    selectedEventImage,
+    selectedEventName,
+    selectedEventDescription,
+    selectedEventStartTime,
+    selectedEventEndTime,
+    selectedEventLocation,
+  ) => {
+    navigation.navigate('EditEventScreen', {
+      eventID: selectedEventID,
+      eventImage: selectedEventImage,
+      eventName: selectedEventName,
+      eventDescription: selectedEventDescription,
+      eventStartTime: selectedEventStartTime,
+      eventEndTime: selectedEventEndTime,
+      eventLocation: selectedEventLocation,
+    });
+  };
 
   //navigate to add task screen when add pressed
   const onAddTaskPressed = () => {
-    navigation.navigate('AddTaskScreen', {eventName: eventName, eventID: currentSelectedEventID});
+    navigation.navigate('AddTaskScreen', {
+      eventName: eventName,
+      eventID: currentSelectedEventID,
+    });
   };
 
   //change to description view mode
@@ -93,102 +109,130 @@ const EventDetailScreen = ({route}) => {
     setViewMode('description');
   };
 
-  
   //change to remaining tasks view mode
   const onRemainingTasksPressed = () => {
     setViewMode('remainingTasks');
   };
 
-  return (
-    <View style={styles.root}>
-      <View style={styles.container}>
-        <Logo
-          onPress={onBackPressed}
-          title="eventor"
-          hasBack="true"
-          hasEdit="true"
-          onEditPress={()=>{onEditPress(currentSelectedEventID,eventImage, eventName, description, eventStartTime, eventEndTime, location)}}
-        />
-        <View style={styles.contentContainer}>
-          <View style={styles.eventBannerContainer}>
-            <ImageBackground
-              source={eventImage !== null ? {uri: `data:image/jpeg;base64,${eventImage}`} : (require('../../../assets/images/eventsBanner.png'))}
-              resizeMode="cover"
-              style={{flex: 1}}
-              imageStyle={styles.itemImage}></ImageBackground>
-          </View>
-          <View style={styles.eventInfoContainer}>
-            <View style={styles.eventInfoHeader}>
-              <View style={styles.eventNameContainer}>
-                <Text style={styles.eventName}>{eventName}</Text>
-              </View>
-              {progression !== 100 ? (
-                <Octicons
-                  name="pulse"
-                  style={[styles.eventStatusIcon, styles.inProgressIcon]}
-                />
-              ) : (
-                <Feather
-                  name="check-circle"
-                  style={[styles.eventStatusIcon, styles.doneIcon]}
-                />
-              )}
+  const display = () => {
+    if (!isLoading) {
+      return (
+        <View style={styles.container}>
+          <Logo
+            onPress={onBackPressed}
+            title="eventor"
+            hasBack="true"
+            hasEdit="true"
+            onEditPress={() => {
+              onEditPress(
+                currentSelectedEventID,
+                eventImage,
+                eventName,
+                description,
+                eventStartTime,
+                eventEndTime,
+                location,
+              );
+            }}
+          />
+          <View style={styles.contentContainer}>
+            <View style={styles.eventBannerContainer}>
+              <ImageBackground
+                source={
+                  eventImage !== null
+                    ? {uri: `data:image/jpeg;base64,${eventImage}`}
+                    : require('../../../assets/images/eventsBanner.png')
+                }
+                resizeMode="cover"
+                style={{flex: 1}}
+                imageStyle={styles.itemImage}></ImageBackground>
             </View>
-            <View style={styles.eventLocationContainer}>
-              <Feather name="map-pin" style={styles.mapPinIcon} />
-              <Text style={styles.eventLocationText}>{location}</Text>
-            </View>
-          </View>
-          <View style={styles.viewModeContainer}>
-            <ViewModeButton 
-              mode='description' 
-              viewMode={viewMode} 
-              title='Description' 
-              type='Description' 
-              onPress={onDescriptionPressed} />
-            <ViewModeButton 
-              mode='remainingTasks' 
-              viewMode={viewMode} 
-              title='Remaining Tasks' 
-              type='RemainingTasks' 
-              onPress={onRemainingTasksPressed} />
-          </View>
-
-          {viewMode === 'remainingTasks' ? (
-            <>
-              <TaskFeed eventName={eventName} eventID={currentSelectedEventID}/>
-              <View style={styles.actionBar}>
-                <View style={styles.progressionContainer}>
-                  <View style={styles.progressionHeader}>
-                    <Text style={styles.progressionText}>Progression</Text>
-                    <MaterialCommunityIcons
-                      name="chart-timeline-variant"
-                      style={styles.graphIcon}
-                    />
-                  </View>
-                  <Text style={styles.progressText}>{progression}%</Text>
+            <View style={styles.eventInfoContainer}>
+              <View style={styles.eventInfoHeader}>
+                <View style={styles.eventNameContainer}>
+                  <Text style={styles.eventName}>{eventName}</Text>
                 </View>
-                <Pressable onPress={onAddTaskPressed}>
-                  <MaterialCommunityIcons
-                    name="plus-circle"
-                    style={styles.addButtonIcon}
-                    color={'#FF3008'}
+                {progression !== 100 ? (
+                  <Octicons
+                    name="pulse"
+                    style={[styles.eventStatusIcon, styles.inProgressIcon]}
                   />
-                </Pressable>
+                ) : (
+                  <Feather
+                    name="check-circle"
+                    style={[styles.eventStatusIcon, styles.doneIcon]}
+                  />
+                )}
               </View>
-            </>
-          ) : (
-            <View style={styles.aboutContainer}>
-              <Text style={styles.headerText}>About the event</Text>
-              <ScrollView style={styles.bodyContainer}>
-                <Text style={styles.bodyText}>{description.length !== 0 ? description : 'The event does not have any description.'}</Text>
-              </ScrollView>
+              <View style={styles.eventLocationContainer}>
+                <Feather name="map-pin" style={styles.mapPinIcon} />
+                <Text style={styles.eventLocationText}>{location}</Text>
+              </View>
             </View>
-          )}
+            <View style={styles.viewModeContainer}>
+              <ViewModeButton
+                mode="description"
+                viewMode={viewMode}
+                title="Description"
+                type="Description"
+                onPress={onDescriptionPressed}
+              />
+              <ViewModeButton
+                mode="remainingTasks"
+                viewMode={viewMode}
+                title="Remaining Tasks"
+                type="RemainingTasks"
+                onPress={onRemainingTasksPressed}
+              />
+            </View>
+
+            {viewMode === 'remainingTasks' ? (
+              <>
+                <TaskFeed
+                  eventName={eventName}
+                  eventID={currentSelectedEventID}
+                />
+                <View style={styles.actionBar}>
+                  <View style={styles.progressionContainer}>
+                    <View style={styles.progressionHeader}>
+                      <Text style={styles.progressionText}>Progression</Text>
+                      <MaterialCommunityIcons
+                        name="chart-timeline-variant"
+                        style={styles.graphIcon}
+                      />
+                    </View>
+                    <Text style={styles.progressText}>{progression}%</Text>
+                  </View>
+                  <Pressable onPress={onAddTaskPressed}>
+                    <MaterialCommunityIcons
+                      name="plus-circle"
+                      style={styles.addButtonIcon}
+                      color={'#FF3008'}
+                    />
+                  </Pressable>
+                </View>
+              </>
+            ) : (
+              <View style={styles.aboutContainer}>
+                <Text style={styles.headerText}>About the event</Text>
+                <ScrollView style={styles.bodyContainer}>
+                  <Text style={styles.bodyText}>
+                    {description.length !== 0
+                      ? description
+                      : 'The event does not have any description.'}
+                  </Text>
+                </ScrollView>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
-    </View>
-  );
+      );
+    } else {
+      return <Loading />;
+    }
+  };
+
+  return <View style={styles.root}>{display()}</View>;
 };
 
 const styles = ScaledSheet.create({
@@ -290,7 +334,7 @@ const styles = ScaledSheet.create({
     fontSize: RFPercentage(3),
   },
   bodyContainer: {
-    paddingVertical:'2@vs',
+    paddingVertical: '2@vs',
     width: '100%',
   },
   bodyText: {

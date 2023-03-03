@@ -11,8 +11,11 @@ import Logo from '../../components/Logo';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import SQLite from 'react-native-sqlite-storage';
 import {useIsFocused} from '@react-navigation/native';
+import Loading from '../../components/Loading';
 
 const HomeScreen = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
   const isFocused = useIsFocused();
 
   //call useNavigation to be able to navigate around
@@ -93,6 +96,7 @@ const HomeScreen = () => {
   useEffect(() => {
     checkDay();
     if (isFocused) {
+      setIsLoading(true);
       const db = SQLite.openDatabase(
         {
           name: 'eventorDB.db',
@@ -122,6 +126,7 @@ const HomeScreen = () => {
                 const count = results.rows.item(0).count;
                 setTotalEvent(count);
                 console.log('HomeScreen: Database closed.');
+                setIsLoading(false);
                 db.close();
               },
             );
@@ -178,83 +183,89 @@ const HomeScreen = () => {
     );
   };
 
-  return (
-    <View style={styles.root}>
-      {/* Logo of The page */}
-      <Logo />
-      {/* content of the Page */}
-      <View style={styles.content}>
-        {/* first half content of page - calendar, see all button, total events display */}
-        <View style={styles.detailContainer}>
-          {/* calendar */}
-          <View style={styles.calendarContainer}>
-            <View style={styles.dayContainer}>
-              <Text style={styles.dayText}>{theDayOfWeek}</Text>
-              <Text style={styles.dateText}>{dayOfMonth}</Text>
-            </View>
-            <View style={styles.quoteContainer}>
-              <Text style={styles.quoteText}>{quote}</Text>
-            </View>
-          </View>
-          {/* see all and total Events display */}
-          <View style={styles.statsContainer}>
-            <Pressable
-              onPress={seeAllButtonPressed}
-              style={styles.seeAllContainer}>
-              <View style={styles.seeAllTextContainer}>
-                <Text style={styles.seeAllText}>See All</Text>
+  const display = () => {
+    if (!isLoading) {
+      return (
+        <>
+          <Logo />
+          {/* content of the Page */}
+          <View style={styles.content}>
+            {/* first half content of page - calendar, see all button, total events display */}
+            <View style={styles.detailContainer}>
+              {/* calendar */}
+              <View style={styles.calendarContainer}>
+                <View style={styles.dayContainer}>
+                  <Text style={styles.dayText}>{theDayOfWeek}</Text>
+                  <Text style={styles.dateText}>{dayOfMonth}</Text>
+                </View>
+                <View style={styles.quoteContainer}>
+                  <Text style={styles.quoteText}>{quote}</Text>
+                </View>
               </View>
-              <View style={styles.seeAllIconContainer}>
-                <FontAwesome5
-                  name="arrow-right"
-                  style={styles.rightArrowIcon}
-                  color={'white'}
-                />
-              </View>
-            </Pressable>
+              {/* see all and total Events display */}
+              <View style={styles.statsContainer}>
+                <Pressable
+                  onPress={seeAllButtonPressed}
+                  style={styles.seeAllContainer}>
+                  <View style={styles.seeAllTextContainer}>
+                    <Text style={styles.seeAllText}>See All</Text>
+                  </View>
+                  <View style={styles.seeAllIconContainer}>
+                    <FontAwesome5
+                      name="arrow-right"
+                      style={styles.rightArrowIcon}
+                      color={'white'}
+                    />
+                  </View>
+                </Pressable>
 
-            <View style={styles.totalEventContainer}>
-              <Text style={styles.totalText}>Total</Text>
-              <Text style={styles.eventText}>Events:</Text>
-              <Text style={styles.numberTotalText}>{totalEvent}</Text>
+                <View style={styles.totalEventContainer}>
+                  <Text style={styles.totalText}>Total</Text>
+                  <Text style={styles.eventText}>Events:</Text>
+                  <Text style={styles.numberTotalText}>{totalEvent}</Text>
+                </View>
+              </View>
+            </View>
+            {/* In Progress Title */}
+            <View style={styles.inProgressTitleContainer}>
+              <View style={styles.inProgressTextContainer}>
+                <Text style={styles.inProgressText}> In-Progress Events </Text>
+              </View>
+              <View style={styles.inProgressIconContainer}>
+                <Pressable>
+                  <FontAwesome
+                    name="angle-right"
+                    style={styles.inProgressIcon}
+                    color={'black'}
+                  />
+                </Pressable>
+              </View>
+            </View>
+            {/* Display events from database*/}
+            <View style={styles.feedContainer}>
+              <FlatList
+                showsVerticalScrollIndicator={false}
+                data={data}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({item}) => listItemView(item)}
+              />
             </View>
           </View>
-        </View>
-        {/* In Progress Title */}
-        <View style={styles.inProgressTitleContainer}>
-          <View style={styles.inProgressTextContainer}>
-            <Text style={styles.inProgressText}> In-Progress Events </Text>
-          </View>
-          <View style={styles.inProgressIconContainer}>
-            <Pressable>
-              <FontAwesome
-                name="angle-right"
-                style={styles.inProgressIcon}
-                color={'black'}
-              />
-            </Pressable>
-          </View>
-        </View>
-        {/* Display events from database*/}
-        <View style={styles.feedContainer}>
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            data={data}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({item}) => listItemView(item)}
-          />
-        </View>
-      </View>
-      {/* Add event button navigate to add event page*/}
-      <Pressable onPress={addButtonPressed}>
-        <MaterialCommunityIcons
-          name="plus-circle"
-          style={styles.addButtonIcon}
-          color={'#FF3008'}
-        />
-      </Pressable>
-    </View>
-  );
+          {/* Add event button navigate to add event page*/}
+          <Pressable onPress={addButtonPressed}>
+            <MaterialCommunityIcons
+              name="plus-circle"
+              style={styles.addButtonIcon}
+              color={'#FF3008'}
+            />
+          </Pressable>
+        </>
+      );
+    } else {
+      return <Loading />;
+    }
+  };
+  return <View style={styles.root}>{display()}</View>;
 };
 const styles = ScaledSheet.create({
   root: {
@@ -262,11 +273,11 @@ const styles = ScaledSheet.create({
     height: '100%',
     backgroundColor: 'white',
   },
+
   content: {
     width: '99%',
     height: '91%',
   },
-
   addButtonIcon: {
     fontSize: RFPercentage(13.5),
     marginRight: '5@ms',
