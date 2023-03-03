@@ -335,6 +335,7 @@ const EditEventScreen = ({route}) => {
               <EndEventTimePicker
                 minDate={eventStartTime}
                 maxDate={maxDate}
+                endTime={eventEndTime}
                 endDateText={endDateText}
                 setEndDateText={setEndDateText}
                 setEndTime={setEventEndTime}

@@ -144,20 +144,28 @@ const AddEventScreen = () => {
     }
   };
 
+  const compareTime = () => {
+    const startTimeStamp = eventStartTime.getTime();
+    const endTimeStamp = eventEndTime.getTime();
+    if (startTimeStamp > endTimeStamp) {
+      setEndDateText(eventStartTime);
+      setEventEndTime(eventStartTime);
+    }
+  };
   //start with calling event for 1 time.
   useEffect(() => {
+    compareTime();
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardStatus(true);
     });
     const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardStatus(false);
     });
-
     return () => {
       showSubscription.remove();
       hideSubscription.remove();
     };
-  }, []);
+  }, [eventStartTime]);
 
   return (
     <View style={styles.root}>
@@ -216,6 +224,7 @@ const AddEventScreen = () => {
               <EndEventTimePicker
                 minDate={eventStartTime}
                 maxDate={maxDate}
+                endTime={eventEndTime}
                 endDateText={endDateText}
                 setEndDateText={setEndDateText}
                 setEndTime={setEventEndTime}
