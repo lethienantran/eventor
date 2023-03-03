@@ -1,4 +1,12 @@
-import {View, Text, Pressable, ScrollView, Keyboard, Modal} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  Keyboard,
+  Modal,
+  ImageBackground,
+} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {ScaledSheet} from 'react-native-size-matters';
@@ -294,12 +302,28 @@ const EditEventScreen = ({route}) => {
         <Logo hasBack={true} title="Edit Event" onPress={onBackPressed} />
         <View style={styles.contentContainer}>
           <View style={styles.uploadBannerContainer}>
-            <Text style={styles.uploadBannerText}>
-              Upload your event banner here.
-            </Text>
-            <Pressable onPress={onBrowsePressed}>
-              <Text style={styles.browseText}>Browse</Text>
-            </Pressable>
+            {!image ? (
+              <>
+                <Text style={styles.uploadBannerText}>
+                  Upload your event banner here.
+                </Text>
+                <Pressable onPress={onBrowsePressed}>
+                  <Text style={styles.browseText}>Browse</Text>
+                </Pressable>
+              </>
+            ) : (
+              <Pressable
+                style={{width: '100%', height: '100%'}}
+                onPress={onBrowsePressed}>
+                <ImageBackground
+                  source={{uri: image}}
+                  style={{flex: 1}}
+                  resizeMode="cover"
+                  imageStyle={styles.imageUpload}
+                  blurRadius={5}
+                />
+              </Pressable>
+            )}
           </View>
           <View style={styles.eventInfoContainer}>
             <ScrollView style={styles.eventInfoScrollView}>
