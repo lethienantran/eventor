@@ -181,7 +181,7 @@ const EventDetailScreen = ({route}) => {
             <View style={styles.aboutContainer}>
               <Text style={styles.headerText}>About the event</Text>
               <ScrollView style={styles.bodyContainer}>
-                <Text style={styles.bodyText}>{description}</Text>
+                <Text style={styles.bodyText}>{description.length !== 0 ? description : 'The event does not have any description.'}</Text>
               </ScrollView>
             </View>
           )}

@@ -81,12 +81,14 @@ const TaskFeed = (props) => {
 
   return (
     <View style={styles.taskList}>
-      <FlatList
+      {(data.length !== 0) ? 
+      (<FlatList
         showsVerticalScrollIndicator={false}
         data={data}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({item}) => listItemView(item)}
-      />
+      />):
+      (<Text style={{alignSelf:'center'}}>There is no tasks.</Text>)}
   </View>
   );
 };
@@ -97,6 +99,7 @@ const styles = ScaledSheet.create({
     width: '100%',
     height: '38%',
     flexDirection: 'column',
+    justifyContent:'center',
   },
   taskContainer: {
     marginVertical: '3.2%',
