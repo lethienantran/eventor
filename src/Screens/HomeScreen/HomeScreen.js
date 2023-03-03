@@ -120,7 +120,7 @@ const HomeScreen = () => {
             //get all current in progress event and order by the most recent upcoming event
             tx.executeSql(
               //query
-              `SELECT * FROM events WHERE eventProgress < 100 AND eventEndTime >= strftime('%Y-%m-%d %H-%M','now') ORDER BY eventStartTime ASC`,
+              `SELECT * FROM events WHERE eventProgress < 100 ORDER BY eventStartTime DESC`,
               //nothing to pass in the arguments
               [],
               //if successfully get data then set data = that results by using a temp array
