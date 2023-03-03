@@ -105,16 +105,20 @@ const EditTaskScreen = ({route}) => {
           );
           tx.executeSql(
             `UPDATE events 
-            SET eventProgress = ROUND((
-              SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
-              FROM tasks 
-              WHERE eventID = ? AND taskStatus = 'cp'
-            ))
+            SET eventProgress = COALESCE(
+                ROUND((
+                    SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks WHERE eventID = ?) 
+                    FROM tasks 
+                    WHERE eventID = ? AND taskStatus = 'cp'
+                )), 
+                0
+            )
             WHERE eventID = ?;`,
             [route.params.eventID, route.params.eventID, route.params.eventID],
             (tx, results) => {
               console.log("EditTaskScreen: Update eventProgress Successfully");
               navigation.goBack();   
+              console.log("EditTaskScreen: Database close.");
             },
             error => {
               console.log("EditTaskScreen: Can't update eventProgress, error: " + error);
