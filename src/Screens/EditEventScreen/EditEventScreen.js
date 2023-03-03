@@ -14,6 +14,7 @@ import CustomButton from '../../components/CustomButton';
 // Icons and Fonts
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import Feather from 'react-native-vector-icons/Feather';
+import Inoicons from 'react-native-vector-icons/Ionicons';
 // Database
 import SQLite from 'react-native-sqlite-storage';
 // Images
@@ -32,7 +33,7 @@ const EditEventScreen = ({route}) => {
   const navigation = useNavigation();
 
   /* Setting Img UseState */
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(route.params.eventImage);
 
   //keyboard status to check for if keyboard is active or not - use for fitting input fields in scroll view
   const [keyBoardStatus, setKeyboardStatus] = useState(false);
@@ -181,7 +182,7 @@ const EditEventScreen = ({route}) => {
       }
       //read the file at path - this case is image dir/path and encoded as base64.
       const imageData =
-        isBannerUpdate !== false ? await RNFS.readFile(image, 'base64') : null;
+        isBannerUpdate !== false ? ((image !== null) ? await RNFS.readFile(image, 'base64') : (null)) : null;
       const db = SQLite.openDatabase(
         {
           name: 'eventorDB.db',
@@ -270,6 +271,11 @@ const EditEventScreen = ({route}) => {
     }
   };
 
+  const onCloseUploadedImage = () => {
+    setImage(null);
+    setBannerUpdate(true);
+  };
+
   //start with calling event for 1 time.
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -305,24 +311,27 @@ const EditEventScreen = ({route}) => {
             {!image ? (
               <>
                 <Text style={styles.uploadBannerText}>
-                  Upload your event banner here.
+                  Update your event banner here.
                 </Text>
                 <Pressable onPress={onBrowsePressed}>
                   <Text style={styles.browseText}>Browse</Text>
                 </Pressable>
               </>
             ) : (
-              <Pressable
-                style={{width: '100%', height: '100%'}}
-                onPress={onBrowsePressed}>
+              <View
+                style={{width: '100%', height: '100%'}}>
                 <ImageBackground
-                  source={{uri: image}}
-                  style={{flex: 1}}
+                  source={isBannerUpdate !== true ? ({uri: `data:image/jpeg;base64,${image}`}): ({uri: image})}
+                  style={styles.imageBackground}
                   resizeMode="cover"
                   imageStyle={styles.imageUpload}
-                  blurRadius={5}
-                />
-              </Pressable>
+                  blurRadius={0}
+                >
+                  <Pressable onPress={onCloseUploadedImage}>
+                    <Inoicons name='close-circle' style={styles.closeImageIcon}/>
+                  </Pressable>
+                </ImageBackground>
+              </View>
             )}
           </View>
           <View style={styles.eventInfoContainer}>
@@ -444,6 +453,21 @@ const styles = ScaledSheet.create({
     fontSize: RFPercentage(2.25),
     textDecorationLine: 'underline',
     color: '#FF3008',
+  },
+  imageBackground:{
+    flex:1,
+    paddingTop:'5@vs',
+    paddingHorizontal:'8@ms', 
+    flexDirection:'row', 
+    justifyContent:'flex-end',
+  },
+  imageUpload: {
+    borderRadius: '25@ms',
+    opacity: 0.5,
+  },
+  closeImageIcon:{
+    fontSize:RFPercentage(3.5),
+    color:'black',
   },
   eventInfoContainer: {
     paddingTop: '20@vs',
