@@ -1,50 +1,70 @@
+//Import from React, React Navigation, React Native
 import {View, Text, Pressable, ImageBackground, ScrollView} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
+import SQLite from 'react-native-sqlite-storage';
+import {useIsFocused} from '@react-navigation/native';
+//Import Icons and Fonts
 import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+//Import Styling
 import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
+//Import Components
 import Logo from '../../components/Logo';
 import TaskFeed from '../../components/TaskFeed';
 import ViewModeButton from '../../components/ViewModeButton';
-import SQLite from 'react-native-sqlite-storage';
-import {useIsFocused} from '@react-navigation/native';
 import Loading from '../../components/Loading';
 
 const EventDetailScreen = ({route}) => {
-  const [isLoading, setIsLoading] = useState(true);
+
   //call useNavigation to be able to navigate around
   const navigation = useNavigation();
-
+  
+  //State of if page is being focused
   const isFocused = useIsFocused();
 
-  //data
+  //State of page is loading or not
+  const [isLoading, setIsLoading] = useState(true);
+  
+  //variables for populating from data and adjust data through states when use
   const [eventName, setEventName] = useState('');
   const [location, setLocation] = useState('');
   const [progression, setProgression] = useState('');
   const [description, setDescription] = useState('');
   const [eventStartTime, setEventStartTime] = useState('');
   const [eventEndTime, setEventEndTime] = useState('');
-  const [viewMode, setViewMode] = useState('description');
   const [eventImage, setEventImage] = useState();
-
   const [currentSelectedEventID, setCurrentSelectedEventID] = useState(
     route.params.eventID,
   );
 
+  //ViewMode state to distinguish/toggle between description and remaining tasks.
+  const [viewMode, setViewMode] = useState('description');
+
+  // Will be called whenever page is being focused, navigated
   useEffect(() => {
+
+    //if the page is focused, retrieve from data and set as loading state
     if (isFocused) {
+
+      //state is loading
       setIsLoading(true);
+
+      //openDatabaseConnection
       const db = SQLite.openDatabase(
         {
           name: 'eventorDB.db',
           createFromLocation: 1,
         },
+
+        //Success Callback: retrieve and populate all variables
         () => {
           console.log('EventDetailScreen: Database opened successfully');
           db.transaction(tx => {
+            
+            //Find events matched with the current event ID and populate the variables
             tx.executeSql(
               'SELECT * FROM events WHERE eventID = ?',
               [currentSelectedEventID],
@@ -57,25 +77,32 @@ const EventDetailScreen = ({route}) => {
                 setEventStartTime(results.rows.item(0).eventStartTime);
                 setEventEndTime(results.rows.item(0).eventEndTime);
                 console.log('EventDetailScreen: Database close.');
+
+                //after everything is populated, its ready, the loading state is no longer true
                 setIsLoading(false);
+
+                //close database, finish transaction
                 db.close();
               },
             );
           });
         },
+
+        //Error Callback: log out error
         error => {
-          console.log(error);
+          console.error(error);
         },
       );
     }
   }, [isFocused]);
 
+  //When Back Button is pressed, go back to previous screen.
   const onBackPressed = () => {
     console.log('EventDetailScreen: Go Back.');
     navigation.goBack();
   };
 
-  //on edit press go to editeventscreen with parameters.
+  //on edit press go to editeventscreen with parameters needed for retrieve data with key.
   const onEditPress = (
     selectedEventID,
     selectedEventImage,
@@ -96,7 +123,7 @@ const EventDetailScreen = ({route}) => {
     });
   };
 
-  //navigate to add task screen when add pressed
+  //navigate to add task screen when add pressed and pass the parameter as key to populate data 
   const onAddTaskPressed = () => {
     navigation.navigate('AddTaskScreen', {
       eventName: eventName,

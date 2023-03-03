@@ -14,7 +14,7 @@ import {ScaledSheet} from 'react-native-size-matters';
 
 // Icons and Fonts
 import {RFPercentage} from 'react-native-responsive-fontsize';
-
+import Inoicons from 'react-native-vector-icons/Ionicons';
 // Database
 // import {DBContext} from '../../../App';
 import CustomButton from '../../components/CustomButton';
@@ -60,6 +60,10 @@ const AddEventScreen = () => {
   const [eventStartTime, setEventStartTime] = useState(new Date());
   const [eventEndTime, setEventEndTime] = useState(new Date());
   const [endDateText, setEndDateText] = useState(eventStartTime);
+
+  const onCloseUploadedImage = () =>{
+    setImage(null);
+  };
 
   //when BackButton pressed
   const onBackPressed = () => {
@@ -202,17 +206,20 @@ const AddEventScreen = () => {
                 </Pressable>
               </>
             ) : (
-              <Pressable
-                style={{width: '100%', height: '100%'}}
-                onPress={onBrowsePressed}>
+              <View
+                style={{width: '100%', height: '100%'}}>
                 <ImageBackground
                   source={{uri: image}}
-                  style={{flex: 1}}
+                  style={styles.imageBackground}
                   resizeMode="cover"
                   imageStyle={styles.imageUpload}
-                  blurRadius={5}
-                />
-              </Pressable>
+                  blurRadius={0}
+                >
+                  <Pressable onPress={onCloseUploadedImage}>
+                    <Inoicons name='close-circle' style={styles.closeImageIcon}/>
+                  </Pressable>
+                </ImageBackground>
+              </View>
             )}
           </View>
           <View style={styles.eventInfoContainer}>
@@ -334,9 +341,20 @@ const styles = ScaledSheet.create({
     textDecorationLine: 'underline',
     color: '#FF3008',
   },
+  imageBackground:{
+    flex:1,
+    paddingTop:'5@vs',
+    paddingHorizontal:'8@ms', 
+    flexDirection:'row', 
+    justifyContent:'flex-end',
+  },
   imageUpload: {
     borderRadius: '25@ms',
-    opacity: 0.4,
+    opacity: 0.5,
+  },
+  closeImageIcon:{
+    fontSize:RFPercentage(3.5),
+    color:'black',
   },
   eventInfoContainer: {
     paddingTop: '20@vs',

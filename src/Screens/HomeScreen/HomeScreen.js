@@ -62,7 +62,7 @@ const HomeScreen = () => {
 
   //use when see all button is pressed, use to navigate to FilteredEventScreen screen
   const seeAllButtonPressed = () => {
-    navigation.navigate('FilteredEventScreen');
+    navigation.navigate('FilteredEventScreen', {filterCase: 'All'});
   };
 
   //use when an event item is pressed to store selectedEventID into asyncstorage
@@ -96,8 +96,10 @@ const HomeScreen = () => {
       setTheDayOfWeek('SATURDAY');
     }
   };
-
-  //run query, checkDay, openDB - use Loading Components, closeDB - not use Loading Component
+  const onInProgressPressed = () => {
+    navigation.navigate('FilteredEventScreen', {filterCase: 'In-Progress'});
+  };
+  //run query, checkDay
   useEffect(() => {
     //set day and quote for calendar when app loads up
     setDayAndQuoteForCalendar();
@@ -287,6 +289,7 @@ const HomeScreen = () => {
                     name="angle-right"
                     style={styles.inProgressIcon}
                     color={'black'}
+                    onPress={onInProgressPressed}
                   />
                 </Pressable>
               </View>
