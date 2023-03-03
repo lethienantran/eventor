@@ -35,11 +35,13 @@ const EventDetailScreen = ({route}) => {
   const [description, setDescription] = useState('');
   const [eventStartTime, setEventStartTime] = useState('');
   const [eventEndTime, setEventEndTime] = useState('');
-  const [viewMode, setViewMode] = useState('description');
   const [eventImage, setEventImage] = useState();
   const [currentSelectedEventID, setCurrentSelectedEventID] = useState(
     route.params.eventID,
   );
+
+  //ViewMode state to distinguish/toggle between description and remaining tasks.
+  const [viewMode, setViewMode] = useState('description');
 
   // Will be called whenever page is being focused, navigated
   useEffect(() => {
@@ -100,7 +102,7 @@ const EventDetailScreen = ({route}) => {
     navigation.goBack();
   };
 
-  //on edit press go to editeventscreen with parameters.
+  //on edit press go to editeventscreen with parameters needed for retrieve data with key.
   const onEditPress = (
     selectedEventID,
     selectedEventImage,
@@ -121,7 +123,7 @@ const EventDetailScreen = ({route}) => {
     });
   };
 
-  //navigate to add task screen when add pressed
+  //navigate to add task screen when add pressed and pass the parameter as key to populate data 
   const onAddTaskPressed = () => {
     navigation.navigate('AddTaskScreen', {
       eventName: eventName,
