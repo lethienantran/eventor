@@ -5,7 +5,6 @@ import {
   ScrollView,
   Keyboard,
   Modal,
-  Image,
   ImageBackground,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
@@ -16,20 +15,19 @@ import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
 import Inoicons from 'react-native-vector-icons/Ionicons';
 // Database
-// import {DBContext} from '../../../App';
-import CustomButton from '../../components/CustomButton';
+import SQLite from 'react-native-sqlite-storage';
 
 // Images
 import {launchImageLibrary} from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
 import Logo from '../../components/Logo';
-import CustomInputField from '../../components/CustomInputField';
 
-//Date Picker
+//components
+import CustomInputField from '../../components/CustomInputField';
 import StartEventTimePicker from '../../components/StartEventTimePicker';
 import EndEventTimePicker from '../../components/EndEventTimePicker';
+import CustomButton from '../../components/CustomButton';
 
-import SQLite from 'react-native-sqlite-storage';
 
 const AddEventScreen = () => {
   //call useNavigation to be able to navigate around
@@ -61,6 +59,7 @@ const AddEventScreen = () => {
   const [eventEndTime, setEventEndTime] = useState(new Date());
   const [endDateText, setEndDateText] = useState(eventStartTime);
 
+  {/* if close is pressed, image is no longer wanted so set null*/}
   const onCloseUploadedImage = () => {
     setImage(null);
   };
@@ -96,13 +95,16 @@ const AddEventScreen = () => {
     const endIsoStr = endDateObj.toISOString();
     const eventEndTimeStr = endIsoStr.replace('T', ' ');
     try {
+      {/* if event name is not filled*/}
       if (!eventName || eventName.length === 0) {
         setModalVisible(true);
         setModalMessage(
           'Please enter an event name. It can be no longer than 30 characters.',
         );
         return false;
-      } else if (!eventLocation || eventLocation.length === 0) {
+      } 
+      //if event location is not filled
+      else if (!eventLocation || eventLocation.length === 0) {
         setModalVisible(true);
         setModalMessage(
           'Please enter a location for your event. It can be no longer than 30 characters.',
@@ -112,11 +114,13 @@ const AddEventScreen = () => {
       //read the file at path - this case is image dir/path and encoded as base64.
       const imageData =
         image !== null ? await RNFS.readFile(image, 'base64') : null;
+      //open data base connection
       const db = SQLite.openDatabase(
         {
           name: 'eventorDB.db',
           createFromLocation: 1,
         },
+        //success callback, insert all values to database
         () => {
           console.log('AddEventScreen: Database opened successfully');
           db.transaction(tx => {
@@ -148,15 +152,17 @@ const AddEventScreen = () => {
             );
           });
         },
+        //error call back
         error => {
-          console.log(error);
+          console.error(error);
         },
       );
     } catch (error) {
-      console.log('error reading image file: ', error);
+      console.error('error reading image file: ', error);
     }
   };
 
+  //this function is to compare time
   const compareTime = () => {
     const startTimeStamp = eventStartTime.getTime();
     const endTimeStamp = eventEndTime.getTime();
@@ -165,6 +171,7 @@ const AddEventScreen = () => {
       setEventEndTime(eventStartTime);
     }
   };
+  
   //start with calling event for 1 time.
   useEffect(() => {
     compareTime();
@@ -181,20 +188,29 @@ const AddEventScreen = () => {
   }, [eventStartTime]);
 
   return (
+    //root container
     <View style={styles.root}>
+      {/* big container 85% center */}
       <View style={styles.container}>
-        <Modal animationType="slide" transparent={true} visible={modalVisible}>
+        {/* modal view, for notication, transparent later in container put low black opacity */}
+        <Modal animationType="fade" transparent={true} visible={modalVisible}>
+          {/* modal big container*/}
           <View style={styles.modalContainer}>
+            {/* modal view wraps message text and close button */}
             <View style={styles.modalView}>
               <Text style={styles.modalMessageText}>{modalMessage}</Text>
+              {/* close button, if pressed then just set modal visible to false */}
               <Pressable onPress={() => setModalVisible(false)}>
                 <Text style={styles.modalCloseText}>Close</Text>
               </Pressable>
             </View>
           </View>
         </Modal>
+        {/* logo component, only have back button */}
         <Logo hasBack={true} title="Create Event" onPress={onBackPressed} />
+        {/* content container everything below logo goes here. */}
         <View style={styles.contentContainer}>
+          {/* background for if image is not uploaded, else image if it is uploaded*/}
           <View style={styles.uploadBannerContainer}>
             {!image ? (
               <>
@@ -223,10 +239,13 @@ const AddEventScreen = () => {
               </View>
             )}
           </View>
+          {/* event info container, wraps the scrollview of input fields */}
           <View style={styles.eventInfoContainer}>
+            {/* scroll view, wraps/holds all the input fields */}
             <ScrollView
               style={styles.eventInfoScrollView}
               showsVerticalScrollIndicator={false}>
+              {/* custom input field component */}
               <CustomInputField
                 value={eventName}
                 setValue={setEventName}
@@ -236,6 +255,7 @@ const AddEventScreen = () => {
                 editable={true}
                 selectTextOnFocus={true}
               />
+              {/* custom input field component */}
               <CustomInputField
                 value={eventDescription}
                 setValue={setEventDescription}
@@ -249,6 +269,7 @@ const AddEventScreen = () => {
                 selectTextOnFocus={true}
                 type="descriptionField"
               />
+              {/* start event time picker component */}
               <StartEventTimePicker
                 minDate={minDate}
                 maxDate={maxDate}
@@ -256,6 +277,7 @@ const AddEventScreen = () => {
                 title={'Start Date/Time'}
                 setStartTime={setEventStartTime}
               />
+              {/* end event time picker component */}
               <EndEventTimePicker
                 minDate={eventStartTime}
                 maxDate={maxDate}
@@ -265,6 +287,7 @@ const AddEventScreen = () => {
                 setEndTime={setEventEndTime}
                 title={'End Date/Time'}
               />
+              {/* custom input field component */}
               <CustomInputField
                 value={eventLocation}
                 setValue={setEventLocation}
@@ -276,6 +299,8 @@ const AddEventScreen = () => {
                 editable={true}
                 selectTextOnFocus={true}
               />
+              {/* if the keyboard is active then shows up (a bump item so that user can scroll down til last input field with out being
+                blocked by keyboard, else dont show up) */}
               <View
                 style={
                   keyBoardStatus
@@ -285,6 +310,7 @@ const AddEventScreen = () => {
               />
             </ScrollView>
           </View>
+          {/* custom button, for create */}
           <View style={styles.buttonContainer}>
             <CustomButton
               onPress={() => {

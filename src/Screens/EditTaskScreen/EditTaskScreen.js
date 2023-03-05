@@ -1,15 +1,22 @@
 import {View, Text, Pressable, Modal} from 'react-native';
 import React, {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
-import {ScaledSheet} from 'react-native-size-matters';
-import Feather from 'react-native-vector-icons/Feather';
-import Logo from '../../components/Logo';
-import {RFPercentage} from 'react-native-responsive-fontsize';
-import CustomInputField from '../../components/CustomInputField';
 import {ScrollView} from 'react-native-gesture-handler';
-import CustomButton from '../../components/CustomButton';
+
+//icons
+import Feather from 'react-native-vector-icons/Feather';
 import Octicons from 'react-native-vector-icons/Octicons';
 
+//stylesheet
+import {ScaledSheet} from 'react-native-size-matters';
+import {RFPercentage} from 'react-native-responsive-fontsize';
+
+//components
+import Logo from '../../components/Logo';
+import CustomInputField from '../../components/CustomInputField';
+import CustomButton from '../../components/CustomButton';
+
+//database
 import SQLite from 'react-native-sqlite-storage';
 
 const EditTaskScreen = ({route}) => {
@@ -21,18 +28,24 @@ const EditTaskScreen = ({route}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
+  //initialize with whatever state the task is, can be either complete or inprogress state (ip or cp)
   const [taskStatus, setTaskStatus] = useState(route.params.taskStatus);
+  //to display what event is in use passed value
   const [eventName, setEventName] = useState(route.params.eventName);
+  //input usestate, initialize with the passed value selected task name
   const [taskName, setTaskName] = useState(route.params.taskName);
 
+  //on go back pressed then go back
   const onBackPressed = () => {
     navigation.goBack();
   };
 
+  //if tasks status pressed, toggle states
   const onTaskStatusPressed = () =>{
     setTaskStatus(taskStatus==='ip' ? 'cp' : 'ip');
   };
 
+  //if update pressed, update values in datadabase, and update progress of event
   const onUpdatePressed = () => {
     if(!taskName || taskName.length === 0){
       setModalVisible(true);
@@ -84,6 +97,7 @@ const EditTaskScreen = ({route}) => {
     );
   };
 
+  //if delete press, delete task from tasks table and update progress
   const onDeletePressed = () => {
     const db = SQLite.openDatabase(
       {

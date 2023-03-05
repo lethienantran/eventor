@@ -141,10 +141,16 @@ const EventDetailScreen = ({route}) => {
     setViewMode('remainingTasks');
   };
 
+  {
+    /* this function is use for rendering the page based on isLoading state, if isLoading = true then we use Loading components and 
+      if isLoading = false then we display the eventdetailscreen UI */
+  }
   const display = () => {
     if (!isLoading) {
       return (
+        //big container 85% center
         <View style={styles.container}>
+          {/* component, this page has back button and edit button */}
           <Logo
             onPress={onBackPressed}
             title="eventor"
@@ -162,7 +168,9 @@ const EventDetailScreen = ({route}) => {
               );
             }}
           />
+          {/* contentContainer, everything in the page below logo */}
           <View style={styles.contentContainer}>
+            {/* container for displaying banner image */}
             <View style={styles.eventBannerContainer}>
               <ImageBackground
                 source={
@@ -174,11 +182,14 @@ const EventDetailScreen = ({route}) => {
                 style={{flex: 1}}
                 imageStyle={styles.itemImage}></ImageBackground>
             </View>
+            {/* information of event container, wrap header, name, location */}
             <View style={styles.eventInfoContainer}>
+              {/* wrap name and icons */}
               <View style={styles.eventInfoHeader}>
                 <View style={styles.eventNameContainer}>
                   <Text style={styles.eventName}>{eventName}</Text>
                 </View>
+                {/* check if is not complete then pulse icon else, check circle icon */}
                 {progression !== 100 ? (
                   <Octicons
                     name="pulse"
@@ -191,12 +202,15 @@ const EventDetailScreen = ({route}) => {
                   />
                 )}
               </View>
+              {/* wrap location pin icon and location name */}
               <View style={styles.eventLocationContainer}>
                 <Feather name="map-pin" style={styles.mapPinIcon} />
                 <Text style={styles.eventLocationText}>{location}</Text>
               </View>
             </View>
+            {/* view buttons, switch between to see either descriptions or remaining tasks wrapper */}
             <View style={styles.viewModeContainer}>
+              {/* description button use viewmode component */}
               <ViewModeButton
                 mode="description"
                 viewMode={viewMode}
@@ -204,6 +218,7 @@ const EventDetailScreen = ({route}) => {
                 type="Description"
                 onPress={onDescriptionPressed}
               />
+              {/* remaining tasks button use viewmode component */}
               <ViewModeButton
                 mode="remainingTasks"
                 viewMode={viewMode}
@@ -212,24 +227,31 @@ const EventDetailScreen = ({route}) => {
                 onPress={onRemainingTasksPressed}
               />
             </View>
-
+            {/* if view mode is remaining tasks, show tasks feed and other related, else show description feed */}
             {viewMode === 'remainingTasks' ? (
               <>
+                {/* taskfeed component, load up data */}
                 <TaskFeed
                   eventName={eventName}
                   eventID={currentSelectedEventID}
                 />
+                {/* action bar wrapper, wrap progression container and add button */}
                 <View style={styles.actionBar}>
+                  {/* progression container wraps header, and progression text */}
                   <View style={styles.progressionContainer}>
+                    {/* progression header wraps header and icons */}
                     <View style={styles.progressionHeader}>
+                      {/* header text */}
                       <Text style={styles.progressionText}>Progression</Text>
                       <MaterialCommunityIcons
                         name="chart-timeline-variant"
                         style={styles.graphIcon}
                       />
                     </View>
+                    {/* progression text */}
                     <Text style={styles.progressText}>{progression}%</Text>
                   </View>
+                  {/* add button*/}
                   <Pressable onPress={onAddTaskPressed}>
                     <MaterialCommunityIcons
                       name="plus-circle"
@@ -240,16 +262,21 @@ const EventDetailScreen = ({route}) => {
                 </View>
               </>
             ) : (
-              <View style={styles.aboutContainer}>
-                <Text style={styles.headerText}>About the event</Text>
-                <ScrollView style={styles.bodyContainer}>
-                  <Text style={styles.bodyText}>
-                    {description.length !== 0
-                      ? description
-                      : 'The event does not have any description.'}
-                  </Text>
-                </ScrollView>
-              </View>
+              <>
+                {/* about container wraps the header and the event content container*/}
+                <View style={styles.aboutContainer}>
+                  {/* header text */}
+                  <Text style={styles.headerText}>About the event</Text>
+                  {/* event content */}
+                  <ScrollView style={styles.bodyContainer}>
+                    <Text style={styles.bodyText}>
+                      {description.length !== 0
+                        ? description
+                        : 'The event does not have any description.'}
+                    </Text>
+                  </ScrollView>
+                </View>
+              </>
             )}
           </View>
         </View>

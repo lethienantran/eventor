@@ -1,13 +1,17 @@
 import {View, Text, Pressable, Modal} from 'react-native';
 import React, {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
-import {ScaledSheet} from 'react-native-size-matters';
-import Inoicons from 'react-native-vector-icons/Ionicons';
-import Logo from '../../components/Logo';
-import {RFPercentage} from 'react-native-responsive-fontsize';
-import CustomInputField from '../../components/CustomInputField';
 import {ScrollView} from 'react-native-gesture-handler';
+//stylesheet
+import {ScaledSheet} from 'react-native-size-matters';
+import {RFPercentage} from 'react-native-responsive-fontsize';
+//icons
+import Inoicons from 'react-native-vector-icons/Ionicons';
+//components
+import Logo from '../../components/Logo';
+import CustomInputField from '../../components/CustomInputField';
 import CustomButton from '../../components/CustomButton';
+//database
 import SQLite from 'react-native-sqlite-storage';
 
 const AddTaskScreen = ({route}) => {
@@ -19,29 +23,39 @@ const AddTaskScreen = ({route}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
+  //eventname use state, initialize with passed event name value
   const [eventName, setEventName] = useState(route.params.eventName);
+  //taskName use state
   const [taskName, setTaskName] = useState('');
+  //taskstatus, for add task, only allow in progress state
   const [taskStatus, setTaskStatus] = useState('In-Progress');
 
+  //event id for database key, use passed value
   const [currentSelectedEventID, setCurrentSelectedEventID] = useState(route.params.eventID);
 
+  //if back pressed, go back
   const onBackPressed = () => {
     navigation.goBack();
   };
 
+  //if create button pressed, insert task name, task status and event id to tasks table and update progress
   const onCreatePressed = () => {
+    //if taskname is blank, show notifications
     if(!taskName || taskName.length === 0){
       setModalVisible(true);
       setModalMessage('Please enter a task name. It can be no longer than 30 characters.');
       return false;
     }
+    //open database connection
     const db = SQLite.openDatabase(
       {
         name: 'eventorDB.db',
         createFromLocation: 1,
       },
+      //success callback: insert to database and update progress
       () => {
         console.log('AddTaskScreen: Database opened successfully');
+        //insert to tasks table
         db.transaction(tx => {
           tx.executeSql(
             'INSERT INTO tasks (taskName, taskStatus, eventID) VALUES (?, ?, ?)',
@@ -53,6 +67,7 @@ const AddTaskScreen = ({route}) => {
               console.log("AddTaskScreen: Error adding task to database: ", error);
             }
           );
+          //update progress 
           tx.executeSql(
             `UPDATE events 
             SET eventProgress = Round((
@@ -80,10 +95,13 @@ const AddTaskScreen = ({route}) => {
     );
   };
   return (
+    //Scroll View/can be view tho :))
     <ScrollView contentContainerStyle={styles.root}>
+      {/* big container center 85% wide */}
       <View style={styles.container}>
+        {/* modal container */}
       <Modal 
-          animationType='slide'
+          animationType='fade'
           transparent={true}
           visible={modalVisible}
         >
@@ -95,15 +113,19 @@ const AddTaskScreen = ({route}) => {
               </Pressable>
             </View>
           </View>
-
         </Modal>
+        {/* logo component, has back button */}
         <Logo onPress={onBackPressed} title="Create Task" hasBack="true" />
+        {/* content container, everything below logo goes here */}
         <View style={styles.contentContainer}>
+          {/* wrapper wrap bubble icons and "what should be done" text */}
           <View style={styles.addTaskQuestion}>
             <Inoicons name="chatbubble-outline" style={styles.bubbleIcon} />
             <Text style={styles.questionText}>What should be done?</Text>
           </View>
+          {/* task info input fields */}
           <View style={styles.taskInfoContainer}>
+            {/* displaying what event name belongs to, CAN'T be edit! */}
             <CustomInputField
               value={eventName}
               setValue={setEventName}
@@ -111,6 +133,7 @@ const AddTaskScreen = ({route}) => {
               editable={false}
               selectTextOnFocus={false}
             />
+            {/* input field for task name */}
             <CustomInputField
               value={taskName}
               setValue={setTaskName}
@@ -118,6 +141,7 @@ const AddTaskScreen = ({route}) => {
               editable={true}
               selectTextOnFocus={true}
             />
+            {/* displaying status of task, because it is add task, CAN'T be edit (only inprogress state) */}
             <CustomInputField
               value={taskStatus}
               setValue={setTaskStatus}
@@ -126,7 +150,9 @@ const AddTaskScreen = ({route}) => {
               selectTextOnFocus={false}
             />
           </View>
+          {/* container wraps buttons */}
           <View style={styles.buttonContainer}>
+            {/* custom button component (create button) */}
             <CustomButton onPress={onCreatePressed} type="Add" text="Create" />
           </View>
         </View>

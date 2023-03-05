@@ -20,6 +20,7 @@ import SQLite from 'react-native-sqlite-storage';
 // Images
 import {launchImageLibrary} from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
+//components
 import Logo from '../../components/Logo';
 import CustomInputField from '../../components/CustomInputField';
 //Date Picker
@@ -90,14 +91,17 @@ const EditEventScreen = ({route}) => {
 
   //delete event and task when pressed delete button
   const onDeletePressed = () => {
+    //open connection
     const db = SQLite.openDatabase(
       {
         name: 'eventorDB.db',
         createFromLocation: 1,
       },
+      //success call back: delete all tasks of the event from database, then delete the event from database
       () => {
         console.log('EditEventScreen: Database opened successfully');
         db.transaction(tx => {
+          //delete all tasks of the event
           tx.executeSql(
             'DELETE FROM tasks WHERE eventID == ?',
             [route.params.eventID],
@@ -119,6 +123,7 @@ const EditEventScreen = ({route}) => {
               );
             },
           );
+          //delete event from the database
           tx.executeSql(
             'DELETE FROM events WHERE eventID == ?',
             [route.params.eventID],
@@ -167,30 +172,38 @@ const EditEventScreen = ({route}) => {
     const eventEndTimeStr = endIsoStr.replace('T', ' ');
 
     try {
+      //if eventname is blank (show notification)
       if (!eventName || eventName.length === 0) {
         setModalVisible(true);
         setModalMessage(
           'Please enter an event name. It can be no longer than 30 characters.',
         );
         return false;
-      } else if (!eventLocation || eventLocation.length === 0) {
+      } 
+      //if event location field is blank (show notification)
+      else if (!eventLocation || eventLocation.length === 0) {
         setModalVisible(true);
         setModalMessage(
           'Please enter a location for your event. It can be no longer than 30 characters.',
         );
         return false;
       }
+      
       //read the file at path - this case is image dir/path and encoded as base64.
       const imageData =
         isBannerUpdate !== false ? ((image !== null) ? await RNFS.readFile(image, 'base64') : (null)) : null;
+      
+      //open database connection
       const db = SQLite.openDatabase(
         {
           name: 'eventorDB.db',
           createFromLocation: 1,
         },
+        //sucess callback: update all the thing with updated input
         () => {
           console.log('EditEventScreen: Database opened successfully');
           db.transaction(tx => {
+            //if banner is not update then keep the banner (exclude banner field), else include banner field to get the new image
             if (isBannerUpdate) {
               tx.executeSql(
                 'UPDATE events SET eventName = ?, eventCaption = ?, eventStartTime = ?, eventEndTime = ?, eventImage = ?, location = ? WHERE eventID = ?',
@@ -213,6 +226,7 @@ const EditEventScreen = ({route}) => {
                   );
                   console.log('EditEventScreen: Database close.');
                   navigation.goBack();
+                  db.close();
                 },
                 error => {
                   console.error(
@@ -271,6 +285,7 @@ const EditEventScreen = ({route}) => {
     }
   };
 
+  //if close is pressed then the image is no longer wanted.
   const onCloseUploadedImage = () => {
     setImage(null);
     setBannerUpdate(true);
@@ -292,10 +307,11 @@ const EditEventScreen = ({route}) => {
   }, []);
 
   return (
+    //root container
     <View style={styles.root}>
       <View style={styles.container}>
         {/* Modal Container */}
-        <Modal animationType="slide" transparent={true} visible={modalVisible}>
+        <Modal animationType="fade" transparent={true} visible={modalVisible}>
           <View style={styles.modalContainer}>
             <View style={styles.modalView}>
               <Text style={styles.modalMessageText}>{modalMessage}</Text>
@@ -305,8 +321,10 @@ const EditEventScreen = ({route}) => {
             </View>
           </View>
         </Modal>
+        {/* logo component, has back button */}
         <Logo hasBack={true} title="Edit Event" onPress={onBackPressed} />
         <View style={styles.contentContainer}>
+          {/* if has image then shows image, if not then just the view component background and text prompting */}
           <View style={styles.uploadBannerContainer}>
             {!image ? (
               <>
@@ -334,7 +352,9 @@ const EditEventScreen = ({route}) => {
               </View>
             )}
           </View>
+          {/* event info container wraps scroll view */}
           <View style={styles.eventInfoContainer}>
+            {/* scroll view wraps all the input fields components */}
             <ScrollView style={styles.eventInfoScrollView}>
               <CustomInputField
                 value={eventName}
@@ -394,12 +414,15 @@ const EditEventScreen = ({route}) => {
               />
             </ScrollView>
           </View>
+          {/* buttons container wraps update button and delete button */}
           <View style={styles.buttonsContainer}>
+            {/* custom button update */}
             <CustomButton
               onPress={onUpdatePressed}
               type="Update"
               text="Update"
             />
+            {/* delete button */}
             <Pressable
               style={styles.deleteButtonContainer}
               onPress={onDeletePressed}>
