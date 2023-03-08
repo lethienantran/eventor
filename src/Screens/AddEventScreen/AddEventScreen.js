@@ -1,3 +1,8 @@
+//Hook and Functions
+import React, {useState, useEffect} from 'react';
+import {useNavigation} from '@react-navigation/native';
+import {ScaledSheet} from 'react-native-size-matters';
+//Components and Responsive
 import {
   View,
   Text,
@@ -7,27 +12,19 @@ import {
   Modal,
   ImageBackground,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
-import {useNavigation} from '@react-navigation/native';
-import {ScaledSheet} from 'react-native-size-matters';
-
-// Icons and Fonts
-import {RFPercentage} from 'react-native-responsive-fontsize';
-import Inoicons from 'react-native-vector-icons/Ionicons';
-// Database
-import SQLite from 'react-native-sqlite-storage';
-
-// Images
-import {launchImageLibrary} from 'react-native-image-picker';
-import RNFS from 'react-native-fs';
 import Logo from '../../components/Logo';
-
-//components
 import CustomInputField from '../../components/CustomInputField';
 import StartEventTimePicker from '../../components/StartEventTimePicker';
 import EndEventTimePicker from '../../components/EndEventTimePicker';
 import CustomButton from '../../components/CustomButton';
-
+import {RFPercentage} from 'react-native-responsive-fontsize';
+// Images
+import {launchImageLibrary} from 'react-native-image-picker';
+import RNFS from 'react-native-fs';
+// Icons
+import Inoicons from 'react-native-vector-icons/Ionicons';
+// Database
+import SQLite from 'react-native-sqlite-storage';
 
 const AddEventScreen = () => {
   //call useNavigation to be able to navigate around
@@ -59,7 +56,7 @@ const AddEventScreen = () => {
   const [eventEndTime, setEventEndTime] = useState(new Date());
   const [endDateText, setEndDateText] = useState(eventStartTime);
 
-  {/* if close is pressed, image is no longer wanted so set null*/}
+  /* if close is pressed, image is no longer wanted so set null*/
   const onCloseUploadedImage = () => {
     setImage(null);
   };
@@ -95,14 +92,16 @@ const AddEventScreen = () => {
     const endIsoStr = endDateObj.toISOString();
     const eventEndTimeStr = endIsoStr.replace('T', ' ');
     try {
-      {/* if event name is not filled*/}
+      {
+        /* if event name is not filled*/
+      }
       if (!eventName || eventName.length === 0) {
         setModalVisible(true);
         setModalMessage(
           'Please enter an event name. It can be no longer than 30 characters.',
         );
         return false;
-      } 
+      }
       //if event location is not filled
       else if (!eventLocation || eventLocation.length === 0) {
         setModalVisible(true);
@@ -171,7 +170,7 @@ const AddEventScreen = () => {
       setEventEndTime(eventStartTime);
     }
   };
-  
+
   //start with calling event for 1 time.
   useEffect(() => {
     compareTime();
@@ -340,7 +339,6 @@ const styles = ScaledSheet.create({
     flexDirection: 'column',
     width: '85%',
     height: '100%',
-    // backgroundColor:'green',
   },
   contentContainer: {
     flexDirection: 'column',
