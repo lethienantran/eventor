@@ -1,9 +1,10 @@
 //Import from React, React Navigation, React Native
-import {View, Text, Pressable, ImageBackground, ScrollView} from 'react-native';
+import {View, Text, Pressable, ImageBackground, ScrollView, Image} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import SQLite from 'react-native-sqlite-storage';
 import {useIsFocused} from '@react-navigation/native';
+import { BlurView } from '@react-native-community/blur';
 //Import Icons and Fonts
 import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
@@ -24,6 +25,8 @@ const EventDetailScreen = ({route}) => {
   
   //State of if page is being focused
   const isFocused = useIsFocused();
+
+  const [openImageView, setOpenImageView] = useState(false);
 
   //State of page is loading or not
   const [isLoading, setIsLoading] = useState(true);
@@ -123,6 +126,13 @@ const EventDetailScreen = ({route}) => {
     });
   };
 
+  const openImage = () =>{ 
+    console.log("opne");
+    setOpenImageView(true);
+  }
+  const closeImage = () =>{
+    setOpenImageView(false);
+  }
   //navigate to add task screen when add pressed and pass the parameter as key to populate data 
   const onAddTaskPressed = () => {
     navigation.navigate('AddTaskScreen', {
@@ -171,7 +181,7 @@ const EventDetailScreen = ({route}) => {
           {/* contentContainer, everything in the page below logo */}
           <View style={styles.contentContainer}>
             {/* container for displaying banner image */}
-            <View style={styles.eventBannerContainer}>
+            <Pressable onPress = {openImage}style={styles.eventBannerContainer}>
               <ImageBackground
                 source={
                   eventImage !== null
@@ -180,8 +190,9 @@ const EventDetailScreen = ({route}) => {
                 }
                 resizeMode="cover"
                 style={{flex: 1}}
-                imageStyle={styles.itemImage}></ImageBackground>
-            </View>
+                imageStyle={styles.itemImage}>
+                </ImageBackground>
+            </Pressable>
             {/* information of event container, wrap header, name, location */}
             <View style={styles.eventInfoContainer}>
               {/* wrap name and icons */}
@@ -279,6 +290,27 @@ const EventDetailScreen = ({route}) => {
               </>
             )}
           </View>
+          {openImageView && (
+                    <View style={styles.modal}>
+                      <BlurView style={{ flex: 1, width:'115%'}}
+                        blurType="light"
+                        blurAmount={10}>
+                        <View style = {{width:'100%',height:'100%', justifyContent:"center", alignItems:"center"}}>
+                        <Image
+                          source={
+                            eventImage !== null
+                              ? {uri: `data:image/jpeg;base64,${eventImage}`}
+                              : require('../../../assets/images/eventsBanner.png')
+                          }
+                          resizeMode="cover"
+                          style = {styles.detailImage}/>
+                          <Pressable onPress={closeImage}>
+                            <Text style = {styles.closeImageText}>Close</Text>
+                        </Pressable>
+                        </View>
+                    </BlurView>
+                  </View>
+            )}
         </View>
       );
     } else {
@@ -298,6 +330,27 @@ const styles = ScaledSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#FFF',
+  },
+  modal: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex:1,
+  },
+  detailImage:{
+    width:"85%",
+    height:"30%",
+    borderRadius: "20@ms",
+  },
+  closeImageText:{
+    fontSize: RFPercentage(2.5),
+    fontFamily: 'OpenSans-Regular',
+    color: '#FF3008',
+    marginTop:"10@vs"
   },
   container: {
     flexDirection: 'column',
