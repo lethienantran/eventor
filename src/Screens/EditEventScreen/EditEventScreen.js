@@ -166,7 +166,7 @@ const EditEventScreen = ({route}) => {
     const eventStartTimeStr = startIsoStr.replace('T', ' ');
 
     //convert eventEndTimeStr
-    const endTimeStamp = Date.parse(eventStartTime);
+    const endTimeStamp = Date.parse(eventEndTime);
     const endDateObj = new Date(endTimeStamp);
     const endIsoStr = endDateObj.toISOString();
     const eventEndTimeStr = endIsoStr.replace('T', ' ');
@@ -245,8 +245,8 @@ const EditEventScreen = ({route}) => {
                 [
                   eventName,
                   eventDescription,
-                  eventStartTime.toString(),
-                  eventEndTime.toString(),
+                  eventStartTimeStr,
+                  eventEndTimeStr,
                   eventLocation,
                   route.params.eventID,
                 ],
@@ -285,11 +285,25 @@ const EditEventScreen = ({route}) => {
     }
   };
 
+  //this function is to compare time
+  const compareTime = () => {
+    const startTimeStamp = eventStartTime.getTime();
+    const endTimeStamp = eventEndTime.getTime();
+    if (startTimeStamp > endTimeStamp) {
+      setEndDateText(eventStartTime);
+      setEventEndTime(eventStartTime);
+    }
+  };
+
   //if close is pressed then the image is no longer wanted.
   const onCloseUploadedImage = () => {
     setImage(null);
     setBannerUpdate(true);
   };
+
+  useEffect(()=>{
+    compareTime();
+  })
 
   //start with calling event for 1 time.
   useEffect(() => {
