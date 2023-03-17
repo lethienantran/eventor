@@ -1,4 +1,4 @@
-<h1 > Eventor </h1>
+<h1 > Eventor - Event Management App </h1>
 <h2> Authors/Developers: Le Thien An Tran, Le Duy An Tran, Matthew Nigasi, Anudari Batsaikhan </h2>
 <img alt="Landing Screen" src="https://user-images.githubusercontent.com/114910291/224648110-2e7f6a8a-e915-4f5b-a281-56683cfb4123.PNG" width="340" height="580" >
 <h3> ABOUT IT </h3> 
