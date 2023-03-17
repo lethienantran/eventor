@@ -5,13 +5,17 @@
 <p>
 This is an android app created with React Native, and it performs best with Pixel 4. It is an event management app where you can create an upcoming event that you might
 need to keep track of every tasks of each event. Since the banner image is rectangular shape, it is recommended to upload a jpg rectangular size for best look of banner
-image. In order to run the app on a simulation after pulling from github, you need to install node-modules with npm-install. Eventor's Preview Video will coming soon!
+image.
+</p>
+<h3> INSTRUCTION </h3>
+<p>
+ In order to run the app on a simulation after pulling from github, you need to install node-modules with npm-install. Eventor's Preview Video will coming soon!
 </p>
 <h3> FEATURES </h3>
 <p>
  <ul>
   <li> Event Management: Users can add, edit and delete their personal events. </li>
-  <li> Events' Progress Tracking: Users can track the progress of their events. The event's progress is shown clearly on that event card </li> 
+  <li> Events' Progress Tracking: Users can track the progress of their events. The event's progress is shown clearly on that event card. </li> 
   <li> Task managements: Users are able to create and edit tasks for each events. </li>
   <li> Timeline management: Earliest, upcoming and in-progress events will appear in the home screen to notice users. Timeline is shown clearly on each event cards. </li>
   <li> View image/banner of each events: Users can pressed on the picture of each event in the description page to view the image/banner of that event. </li>
