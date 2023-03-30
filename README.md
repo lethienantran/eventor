@@ -1,6 +1,6 @@
 <h1 > Eventor - Event Management App </h1>
 <h2> Authors/Developers: Le Thien An Tran, Le Duy An Tran, Matthew Nigasi, Anudari Batsaikhan </h2>
-<img alt="Landing Screen" src="https://user-images.githubusercontent.com/114910291/224648110-2e7f6a8a-e915-4f5b-a281-56683cfb4123.PNG" width="340" height="580" >
+<img alt="Eventor Demo" src="https://user-images.githubusercontent.com/114910291/228724328-238cb42d-876f-4740-855d-e16985f3b7b4.gif" width="340" height="580" >
 <h3> ABOUT IT </h3> 
 <p>
 This is an android app created with React Native, and it performs best with Pixel 4. It is an event management app where you can create an upcoming event that you might
@@ -28,6 +28,8 @@ image.
  </ul>
 </p>
 <h3> EVENTOR'S SCREENSHOT </h3>
+<h4> Landing Screen </h4>
+<img alt="Landing Screen" src="https://user-images.githubusercontent.com/114910291/224648110-2e7f6a8a-e915-4f5b-a281-56683cfb4123.PNG" width="340" height="580" >
 <h4> Home Screen </h4>
 <img alt="Home Screen" src="https://user-images.githubusercontent.com/114910291/224648109-b07085f2-d0c6-4fe6-a62d-c0b783f44fb8.PNG" width="340" height="580" >
 <h4> Create Event Screen </h4>
