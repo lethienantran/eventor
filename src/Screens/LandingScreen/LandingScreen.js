@@ -1,11 +1,14 @@
+//Hooks and Functions
+import React from 'react';
 import {View, Text, Image, Pressable} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+//Responsive, Icons, and fonts
 import {ScaledSheet} from 'react-native-size-matters';
 import {RFPercentage} from 'react-native-responsive-fontsize';
-import React from 'react';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+//Components
 import Logo from '../../components/Logo';
 import IllustratorImage from '../../../assets/images/illustratorImage.png';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useNavigation} from '@react-navigation/native';
 
 const LandingScreen = () => {
   //call useNavigation to be able to navigate around
@@ -32,7 +35,6 @@ const LandingScreen = () => {
         <Text style={styles.sloganText}>your event</Text>
         <Text style={styles.sloganText}>starts.</Text>
       </View>
-
       <Pressable onPress={continueButtonPressed}>
         <Ionicons
           name="arrow-forward-circle"
