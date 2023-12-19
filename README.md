@@ -1,5 +1,5 @@
 <h1 > Eventor - Event Management App </h1>
-<h2> Authors/Developers: Le Thien An Tran, Le Duy An Tran, Matthew Nigasi, Anudari Batsaikhan </h2>
+<h2> Authors/Developers: Le Thien An Tran, Le Duy An Tran, Matthew Negasi, Anudari Batsaikhan </h2>
 <img alt="Eventor Demo" src="https://user-images.githubusercontent.com/114910291/228724328-238cb42d-876f-4740-855d-e16985f3b7b4.gif" width="340" height="580" >
 <h3> ABOUT IT </h3> 
 <p>
